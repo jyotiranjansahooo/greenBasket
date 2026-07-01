@@ -51,10 +51,11 @@ const productSchema = new mongoose.Schema(
       },
     ],
 
-    organic: {
-      type: Boolean,
-      default: false,
-    },
+    farmingMethod: {
+    type: String,
+    enum: ["organic", "conventional"]
+    ,required: true,
+},
 
     harvestDate: {
       type: Date,
@@ -70,5 +71,5 @@ const productSchema = new mongoose.Schema(
     timestamps: true,
   }
 )
-const productModel = mongoose.model("Product", productSchema);
-export default productModel;
+const Product =   mongoose.models.Product || mongoose.model("Product", productSchema);
+export default Product;
