@@ -68,12 +68,93 @@ if (!req.user.isVerified) {
 
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find({ availability: true })
+    const {
+      search,
+      category,
+      farmer,
+      farmingMethod,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 10,
+      sort = "latest",
+    } = req.query;
+
+    const query = {
+      availability: true,
+    };
+
+    // Search by product name
+    if (search) {
+      query.name = {
+        $regex: search,
+        $options: "i",
+      };
+    }
+
+    // Filter by category
+    if (category) {
+      query.category = category;
+    }
+
+    // Filter by farmer
+    if (farmer) {
+      query.farmer = farmer;
+    }
+
+    // Filter by farming method
+    if (farmingMethod) {
+      query.farmingMethod = farmingMethod;
+    }
+
+    // Price Filter
+    if (minPrice || maxPrice) {
+      query.price = {};
+
+      if (minPrice) {
+        query.price.$gte = Number(minPrice);
+      }
+
+      if (maxPrice) {
+        query.price.$lte = Number(maxPrice);
+      }
+    }
+
+    let sortOption = {};
+
+    switch (sort) {
+      case "priceAsc":
+        sortOption.price = 1;
+        break;
+
+      case "priceDesc":
+        sortOption.price = -1;
+        break;
+
+      case "oldest":
+        sortOption.createdAt = 1;
+        break;
+
+      default:
+        sortOption.createdAt = -1;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const totalProducts = await Product.countDocuments(query);
+
+    const products = await Product.find(query)
       .populate("farmer", "name farmLocation")
-      .populate("category", "name");
+      .populate("category", "name")
+      .sort(sortOption)
+      .skip(skip)
+      .limit(Number(limit));
 
     res.status(200).json({
       success: true,
+      totalProducts,
+      currentPage: Number(page),
+      totalPages: Math.ceil(totalProducts / limit),
       count: products.length,
       products,
     });
