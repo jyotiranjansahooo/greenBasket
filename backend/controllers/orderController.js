@@ -1,9 +1,7 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 
-// @desc    Place Order
-// @route   POST /api/orders
-// @access  Private (Customer)
+
 
 export const placeOrder = async (req, res) => {
   try {
@@ -79,34 +77,152 @@ export const placeOrder = async (req, res) => {
   }
 };
 
-// @desc    Customer Order History
+
+
+//custumer orders
+
 export const getMyOrders = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Get My Orders API - Coming Next",
-  });
+  try {
+    const orders = await Order.find({
+      customer: req.user._id,
+    })
+      .populate("products.product", "name price images")
+      .populate("farmer", "name farmLocation")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
 
-// @desc    Farmer Orders
+
+
+//Get Farmer Orders
+
+
 export const getFarmerOrders = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Get Farmer Orders API - Coming Next",
-  });
+  try {
+    const orders = await Order.find({
+      farmer: req.user._id,
+    })
+      .populate("customer", "name phone address")
+      .populate("products.product", "name price")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
 
-// @desc    Get Order By ID
+//    Get Order By ID
+
+
 export const getOrderById = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Get Order By ID API - Coming Next",
-  });
+  try {
+    const order = await Order.findById(req.params.id)
+      .populate("customer", "name email phone")
+      .populate("farmer", "name farmLocation phone")
+      .populate("products.product", "name images");
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Allow only customer, farmer, or admin
+    if (
+      req.user.role !== "admin" &&
+      order.customer._id.toString() !== req.user._id.toString() &&
+      order.farmer._id.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      order,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
 
-// @desc    Update Order Status
+//    Update Order Status
+
+
 export const updateOrderStatus = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Update Order Status API - Coming Next",
-  });
+  try {
+    const { status } = req.body;
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Farmer can update only their own orders
+    if (
+      req.user.role === "farmer" &&
+      order.farmer.toString() !== req.user._id.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    order.status = status;
+
+    await order.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Order status updated successfully",
+      order,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
 };
