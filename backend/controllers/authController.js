@@ -1,8 +1,6 @@
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
-import User from "../models/user.js";
+import bcrypt from "bcrypt";
+import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
-
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -31,17 +29,16 @@ export const registerUser = async (req, res) => {
       });
     }
 
-if (
-  role === "farmer" &&
-  (!farmLocation || !cropTypes || !farmingMethod)
-) {
-  return res.status(400).json({
-    success: false,
-    message: "Farmer profile information is required",
-  });
-}
-
-
+    // Validate farmer fields
+    if (
+      role === "farmer" &&
+      (!farmLocation || !cropTypes || !farmingMethod)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Farmer profile information is required",
+      });
+    }
 
     // Hash password
     const salt = await bcrypt.genSalt(10);
@@ -60,68 +57,12 @@ if (
       farmingMethod,
     });
 
+    // Create JWT cookie
+    generateToken(res, user._id);
+
     res.status(201).json({
       success: true,
       message: "User registered successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
-
-
-
-export const loginUser = async (req, res) => {
-   try {
-    const { email, password } = req.body;
-
-    // Check if email and password are provided
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide email and password",
-      });
-    }
-
-    // Find user by email and include password
-    const user = await User.findOne({ email }).select("+password");
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email and password",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid email and password",
-      });
-    }
-
-    // Generate JWT Token
-    const token = generateToken(user._id);
-
-    // Return response
-    res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -141,16 +82,91 @@ export const loginUser = async (req, res) => {
   }
 };
 
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide email and password",
+      });
+    }
 
+    const user = await User.findOne({ email }).select("+password");
 
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid email or password",
+      });
+    }
+
+    // Create JWT cookie
+    generateToken(res, user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        isVerified: user.isVerified,
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// @desc    Logout user
+// @route   POST /api/auth/logout
+// @access  Private
+export const logoutUser = (req, res) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+};
+
+// @desc    Get current user
+// @route   GET /api/auth/me
+// @access  Private
 export const getCurrentUser = async (req, res) => {
   try {
     res.status(200).json({
       success: true,
       user: req.user,
     });
+
   } catch (error) {
+    console.error(error);
+
     res.status(500).json({
       success: false,
       message: "Server Error",
