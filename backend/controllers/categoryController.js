@@ -6,8 +6,15 @@ export const createCategory = async (req, res) => {
   try {
     const { name, description, image } = req.body;
 
-    // Check if category already exists
-    const normalizedName = name.trim().toLowerCase();
+    if (!name || !name.toString().trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Category name is required",
+      });
+    }
+
+    // Normalize and check if category already exists
+    const normalizedName = name.toString().trim().toLowerCase();
     const existingCategory = await Category.findOne({ name: normalizedName });
 
     if (existingCategory) {
@@ -64,7 +71,10 @@ export const getCategories = async (req, res) => {
 
 export const getCategoryById = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
+    const category = await Category.findOne({
+      _id: req.params.id,
+      isActive: true,
+    });
 
     if (!category) {
       return res.status(404).json({
@@ -91,9 +101,28 @@ export const getCategoryById = async (req, res) => {
 
 export const updateCategory = async (req, res) => {
   try {
+    const updateData = { ...req.body };
+
+    if (updateData.name) {
+      const normalizedName = updateData.name.toString().trim().toLowerCase();
+      const existingCategory = await Category.findOne({
+        name: normalizedName,
+        _id: { $ne: req.params.id },
+      });
+
+      if (existingCategory) {
+        return res.status(400).json({
+          success: false,
+          message: "Category name is already in use",
+        });
+      }
+
+      updateData.name = normalizedName;
+    }
+
     const category = await Category.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true,

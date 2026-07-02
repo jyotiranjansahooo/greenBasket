@@ -18,6 +18,13 @@ export const createProduct = async (req, res) => {
       harvestDate,
     } = req.body;
 
+if (!req.user.isVerified) {
+  return res.status(403).json({
+    success: false,
+    message: "Your account is not verified by the admin yet.",
+  });
+}
+
     // Check category exists
     const categoryExists = await Category.findById(category);
 
