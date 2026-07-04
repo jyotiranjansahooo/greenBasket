@@ -21,43 +21,45 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in
   const checkUser = useCallback(async () => {
     try {
-      const { user } = await getCurrentUser();
-      setUser(user);
+      const data = await getCurrentUser();
+
+      setUser(data.user);
+
+      return data.user;
     } catch (error) {
       setUser(null);
+      return null;
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Run once when app loads
   useEffect(() => {
-    async function initialize() {
+    async function init() {
       await checkUser();
     }
 
-    initialize();
+    init();
   }, [checkUser]);
 
   // Login
   const loginUser = async (email, password) => {
-    const data = await login(email, password);
+    await login(email, password);
 
-    await checkUser();
+    const loggedInUser = await checkUser();
 
-    return data;
+    return loggedInUser;
   };
 
   // Register
   const registerUser = async (formData) => {
-    const data = await register(formData);
+    await register(formData);
 
-    await checkUser();
+    const newUser = await checkUser();
 
-    return data;
+    return newUser;
   };
 
   // Logout
@@ -84,11 +86,5 @@ export function AuthProvider({ children }) {
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
-  }
-
-  return context;
+  return useContext(AuthContext);
 }

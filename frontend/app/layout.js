@@ -1,16 +1,33 @@
 import "./globals.css";
+import { Baloo_2,Fredoka, Poppins, DynaPuff } from "next/font/google";
+import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 
-export const metadata = {
-  title: "Green Basket",
-  description: "Farmer to Consumer Marketplace",
-};
+
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-fredoka",
+});
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-poppins",
+});
+
+const dynaPuff = DynaPuff({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-dynapuff",
+});
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}>
         <AuthProvider>
+          <Toaster position="top-right" />
           {children}
         </AuthProvider>
       </body>
