@@ -6,6 +6,7 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  getFarmerProducts,
 } from "../controllers/productController.js";
 
 import { protect, authorize } from "../middleware/authMiddleware.js";
@@ -15,16 +16,40 @@ const router = express.Router();
 
 // Public Routes
 router.get("/", getProducts);
-router.get("/:id", getProductById);
+
 
 // Farmer Routes
+router.get(
+  "/farmer",
+  protect,
+  authorize("farmer"),
+  getFarmerProducts
+);
+
 router.post(
+  "/",
   protect,
   authorize("farmer"),
   upload.array("images", 5),
   createProduct
 );
-router.put("/:id", protect, authorize("farmer", "admin"), updateProduct);
-router.delete("/:id", protect, authorize("farmer", "admin"), deleteProduct);
+
+router.get("/:id", getProductById);
+
+router.put(
+  "/:id",
+  protect,
+  authorize("farmer", "admin"),
+  upload.array("images", 5), // optional but recommended if updating images
+  updateProduct
+);
+router.delete(
+  "/:id",
+  protect,
+  authorize("farmer", "admin"),
+  deleteProduct
+);
+
+
 
 export default router;

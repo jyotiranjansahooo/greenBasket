@@ -36,6 +36,7 @@ export default function HeroBackground() {
           width={250}
           height={250}
           aria-hidden="true"
+          priority
           className="pointer-events-none absolute right-1/3 top-12 -z-10 opacity-25"
         />
       </Floating>

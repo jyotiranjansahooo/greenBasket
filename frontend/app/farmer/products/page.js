@@ -1,13 +1,81 @@
 "use client";
 
-import ProductForm from "@/components/products/ProductForm";
+import Link from "next/link";
 
-export default function AddProductPage() {
+import useFarmerProducts from "@/app/hooks/useFarmerProducts";
+
+import FarmerProductCard from "@/app/components/products/FarmerProductCard";
+
+export default function FarmerProductsPage() {
+  const {
+  data: products = [],
+  isPending,
+  error,
+} = useFarmerProducts();
+
+if (isPending) {
+  return <h1>Loading...</h1>;
+}
+
+if (error) {
   return (
-    <main className="min-h-screen bg-[#F7FAF5] py-10">
-      <div className="mx-auto max-w-5xl px-6">
-        <ProductForm />
+    <main className="flex min-h-screen items-center justify-center bg-[#F7FAF5]">
+      <div className="rounded-2xl bg-white p-8 shadow-lg text-center">
+        <h2 className="text-2xl font-bold text-red-500">
+          Failed to load products
+        </h2>
+
+        <p className="mt-3 text-gray-500">
+          {error.message}
+        </p>
       </div>
+    </main>
+  );
+}
+
+  return (
+    <main className="min-h-screen bg-[#F7FAF5] p-10">
+
+      <div className="mb-10 flex items-center justify-between">
+
+        <h1 className="heading-font text-5xl text-[#346739]">
+          My Products
+        </h1>
+
+        <Link
+          href="/farmer/products/add"
+          className="rounded-xl bg-[#346739] px-6 py-3 text-white"
+        >
+          + Add Product
+        </Link>
+
+      </div>
+
+      {products.length === 0 ? (
+        <div className="rounded-3xl bg-white p-16 text-center shadow">
+
+          <h2 className="text-3xl font-bold">
+            No Products Yet 🌱
+          </h2>
+
+          <p className="mt-4 text-gray-500">
+            Add your first product to start selling.
+          </p>
+
+        </div>
+      ) : (
+        <div className="grid gap-8 md:grid-cols-3">
+
+          {products.map((product) => (
+            <FarmerProductCard
+              key={product._id}
+              product={product}
+            />
+          ))}
+
+        </div>
+      )}
+
     </main>
   );
 }

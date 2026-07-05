@@ -1,8 +1,8 @@
 import "./globals.css";
-import { Baloo_2,Fredoka, Poppins, DynaPuff } from "next/font/google";
+import { Fredoka, Poppins, DynaPuff } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
-
+import QueryProvider from "@/providers/QueryProvider";
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -25,11 +25,15 @@ const dynaPuff = DynaPuff({
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}>
-        <AuthProvider>
-          <Toaster position="top-right" />
-          {children}
-        </AuthProvider>
+      <body
+        className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}
+      >
+        <QueryProvider>
+          <AuthProvider>
+            <Toaster position="top-right" />
+            {children}
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

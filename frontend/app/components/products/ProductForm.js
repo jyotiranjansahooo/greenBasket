@@ -2,39 +2,49 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-import ImageUpload from "./ImageUpload";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createProduct } from "@/services/productService";
+import toast from "react-hot-toast";
 
 import { productSchema } from "@/lib/productSchema";
+import { createProduct } from "@/services/productService";
+import useCategories from "@/app/hooks/useCategories";
 
-import Input from "@/components/ui/Input";
-import Textarea from "@/components/ui/Textarea";
-import Select from "@/components/ui/Select";
-import Button from "@/components/ui/Button";
+import Input from "@/app/components/ui/Input";
+import Textarea from "@/app/components/ui/Textarea";
+import Select from "@/app/components/ui/Select";
+import Button from "@/app/components/ui/Button";
 
-import useCategories from "@/hooks/useCategories";
+import ImageUpload from "./ImageUpload";
+
 
 export default function ProductForm() {
-  const { categories, loading: categoriesLoading } = useCategories();
-const router = useRouter();
+  const router = useRouter();
 
-const [images, setImages] = useState([]);
+  const [images, setImages] = useState([]);
+
+  const {
+    categories,
+    loading: categoryLoading,
+  } = useCategories();
+
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: {
+      errors,
+      isSubmitting,
+    },
+    reset,
   } = useForm({
     resolver: zodResolver(productSchema),
   });
 
- async function onSubmit(data) {
+async function onSubmit(values) {
   try {
     const formData = new FormData();
 
-    Object.entries(data).forEach(([key, value]) => {
+    Object.entries(values).forEach(([key, value]) => {
       formData.append(key, value);
     });
 
@@ -44,12 +54,16 @@ const [images, setImages] = useState([]);
 
     await createProduct(formData);
 
-    toast.success("Product added successfully 🌱");
+    toast.success("🌱 Product added successfully!");
+
+    reset();
+    setImages([]);
 
     router.push("/farmer/products");
   } catch (error) {
     toast.error(
-      error.response?.data?.message || "Failed to create product"
+      error.response?.data?.message ||
+      "Unable to create product."
     );
   }
 }
@@ -57,11 +71,25 @@ const [images, setImages] = useState([]);
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-3xl bg-white p-8 shadow-xl"
+      className="
+        rounded-3xl
+        bg-white
+        p-10
+        shadow-xl
+        space-y-8
+      "
     >
-      <h1 className="heading-font text-4xl text-[#346739]">
-        Add Product
-      </h1>
+      <div>
+
+        <h1 className="heading-font text-4xl text-[#346739]">
+          Add Product
+        </h1>
+
+        <p className="body-font mt-2 text-gray-500">
+          Fill in the product details below.
+        </p>
+
+      </div>
 
       <Input
         label="Product Name"
@@ -78,16 +106,17 @@ const [images, setImages] = useState([]);
       />
 
       <div className="grid gap-6 md:grid-cols-2">
+
         <Select
           label="Category"
           error={errors.category?.message}
           {...register("category")}
         >
-          <option value="">Select Category</option>
+          <option value="">
+            Select Category
+          </option>
 
-          {categoriesLoading ? (
-            <option>Loading...</option>
-          ) : (
+          {!categoryLoading &&
             categories.map((category) => (
               <option
                 key={category._id}
@@ -95,8 +124,8 @@ const [images, setImages] = useState([]);
               >
                 {category.name}
               </option>
-            ))
-          )}
+            ))}
+
         </Select>
 
         <Input
@@ -106,13 +135,15 @@ const [images, setImages] = useState([]);
           error={errors.price?.message}
           {...register("price")}
         />
+
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+
         <Input
           type="number"
           label="Quantity"
-          placeholder="20"
+          placeholder="25"
           error={errors.quantity?.message}
           {...register("quantity")}
         />
@@ -122,32 +153,62 @@ const [images, setImages] = useState([]);
           error={errors.unit?.message}
           {...register("unit")}
         >
-          <option value="">Select Unit</option>
+          <option value="">
+            Select Unit
+          </option>
+
           <option value="kg">Kg</option>
+
           <option value="g">Gram</option>
-          <option value="piece">Piece</option>
-          <option value="dozen">Dozen</option>
-          <option value="liter">Liter</option>
+
+          <option value="piece">
+            Piece
+          </option>
+
+          <option value="dozen">
+            Dozen
+          </option>
+
+          <option value="liter">
+            Liter
+          </option>
+
         </Select>
+
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
+
         <Select
           label="Farming Method"
-          error={errors.farmingMethod?.message}
+          error={
+            errors.farmingMethod?.message
+          }
           {...register("farmingMethod")}
         >
-          <option value="">Select Method</option>
-          <option value="organic">Organic</option>
-          <option value="conventional">Conventional</option>
+          <option value="">
+            Select Method
+          </option>
+
+          <option value="organic">
+            Organic
+          </option>
+
+          <option value="conventional">
+            Conventional
+          </option>
+
         </Select>
 
         <Input
           type="date"
           label="Harvest Date"
-          error={errors.harvestDate?.message}
+          error={
+            errors.harvestDate?.message
+          }
           {...register("harvestDate")}
         />
+
       </div>
 
       <Input
@@ -156,17 +217,24 @@ const [images, setImages] = useState([]);
         error={errors.origin?.message}
         {...register("origin")}
       />
-<ImageUpload
-  images={images}
-  setImages={setImages}
-/>
 
-      <Button
-        type="submit"
-        loading={isSubmitting}
-      >
-        Save Product
-      </Button>
+      <ImageUpload
+        images={images}
+        setImages={setImages}
+      />
+
+      <div className="pt-2">
+
+        <Button
+          loading={isSubmitting}
+          type="submit"
+          className="w-full"
+        >
+          Save Product
+        </Button>
+
+      </div>
+
     </form>
   );
 }

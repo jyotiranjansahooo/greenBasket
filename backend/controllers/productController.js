@@ -271,9 +271,8 @@ export const updateProduct = async (req, res) => {
 };
 
 
-// @desc    Delete Product
-// @route   DELETE /api/products/:id
-// @access  Private (Farmer/Admin)
+// admin    Delete Product
+
 
 export const deleteProduct = async (req, res) => {
   try {
@@ -306,6 +305,32 @@ export const deleteProduct = async (req, res) => {
       message: "Product deleted successfully",
     });
 
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+// @desc    Get Logged-in Farmer Products
+// @route   GET /api/products/farmer
+// @access  Private (Farmer)
+
+export const getFarmerProducts = async (req, res) => {
+  try {
+    const products = await Product.find({
+      farmer: req.user._id,
+    })
+      .populate("category", "name")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: products.length,
+      products,
+    });
   } catch (error) {
     console.error(error);
 
