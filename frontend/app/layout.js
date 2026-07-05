@@ -24,7 +24,7 @@ const dynaPuff = DynaPuff({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}>
         <AuthProvider>
           <Toaster position="top-right" />

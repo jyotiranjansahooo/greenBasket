@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
- {
+  {
     farmer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -45,17 +45,16 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
 
-    images: [
-      {
-        type: String,
-      },
-    ],
+    images: {
+      type: [String],
+      default: [],
+    },
 
     farmingMethod: {
-    type: String,
-    enum: ["organic", "conventional"]
-    ,required: true,
-},
+      type: String,
+      enum: ["organic", "conventional"],
+      required: true,
+    },
 
     harvestDate: {
       type: Date,
@@ -66,10 +65,43 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    origin: {
+      type: String,
+      default: "",
+    },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+
+    rating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+
+    numReviews: {
+      type: Number,
+      default: 0,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 100,
+    },
   },
   {
     timestamps: true,
   }
-)
-const Product =   mongoose.models.Product || mongoose.model("Product", productSchema);
+);
+
+const Product =
+  mongoose.models.Product ||
+  mongoose.model("Product", productSchema);
+
 export default Product;

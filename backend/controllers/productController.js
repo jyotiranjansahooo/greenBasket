@@ -13,17 +13,19 @@ export const createProduct = async (req, res) => {
       price,
       quantity,
       unit,
-      images,
       farmingMethod,
       harvestDate,
+      origin,
+      isFeatured,
     } = req.body;
 
-if (!req.user.isVerified) {
-  return res.status(403).json({
-    success: false,
-    message: "Your account is not verified by the admin yet.",
-  });
-}
+    // Check farmer verification
+    if (!req.user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account is not verified by the admin yet.",
+      });
+    }
 
     // Check category exists
     const categoryExists = await Category.findById(category);
@@ -35,6 +37,12 @@ if (!req.user.isVerified) {
       });
     }
 
+    // Images uploaded by Multer
+    const imagePaths = req.files
+      ? req.files.map((file) => `/uploads/products/${file.filename}`)
+      : [];
+
+    // Create product
     const product = await Product.create({
       farmer: req.user._id,
       category,
@@ -43,9 +51,11 @@ if (!req.user.isVerified) {
       price,
       quantity,
       unit,
-      images,
       farmingMethod,
       harvestDate,
+      origin,
+      isFeatured,
+      images: imagePaths,
     });
 
     res.status(201).json({
@@ -53,6 +63,7 @@ if (!req.user.isVerified) {
       message: "Product created successfully",
       product,
     });
+
   } catch (error) {
     console.error(error);
 

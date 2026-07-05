@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
+import path from "path";
 
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -15,16 +16,18 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 dotenv.config();
 await connectDB();
 
+
 const app = express();
 
 // Middleware
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:3001",
     credentials: true,
   })
 );app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static("uploads"));
 
 
 

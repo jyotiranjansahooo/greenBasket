@@ -9,6 +9,7 @@ import {
 } from "../controllers/productController.js";
 
 import { protect, authorize } from "../middleware/authMiddleware.js";
+import upload from "../middleware/uploadMiddleware.js";
 
 const router = express.Router();
 
@@ -17,7 +18,12 @@ router.get("/", getProducts);
 router.get("/:id", getProductById);
 
 // Farmer Routes
-router.post("/", protect, authorize("farmer"), createProduct);
+router.post(
+  protect,
+  authorize("farmer"),
+  upload.array("images", 5),
+  createProduct
+);
 router.put("/:id", protect, authorize("farmer", "admin"), updateProduct);
 router.delete("/:id", protect, authorize("farmer", "admin"), deleteProduct);
 
