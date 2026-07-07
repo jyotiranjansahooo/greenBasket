@@ -5,7 +5,6 @@ import Categories from "@/app/components/home/Categories";
 export default function HomePage() {
   return (
     <>
-      <Navbar />
       <Hero />
       <Categories />
     </>

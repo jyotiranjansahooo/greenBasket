@@ -1,11 +1,15 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { FaShoppingBasket, FaBars, FaTimes } from "react-icons/fa";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const router = useRouter();
+const { user, logoutUser } = useAuth();
 
   return (
     <nav className="animate-fadeDown sticky top-0 z-50 border-green-100 bg-[#8BA888] backdrop-blur-lg">
@@ -37,16 +41,53 @@ export default function Navbar() {
             Sell
           </Link>
 
-          <Link href="/login" className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full">
-            Login
-          </Link>
+          {!user ? (
+  <>
+    <Link
+      href="/login"
+      className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+    >
+      Login
+    </Link>
 
-          <Link
-            href="/register"
-            className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
-          >
-            Register
-          </Link>
+    <Link
+      href="/register"
+      className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
+    >
+      Register
+    </Link>
+  </>
+) : (
+  <>
+    {user.role === "customer" && (
+      <Link
+        href="/cart"
+        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+      >
+        Cart
+      </Link>
+    )}
+
+    {user.role === "farmer" && (
+      <Link
+        href="/farmer/dashboard"
+        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+      >
+        Dashboard
+      </Link>
+    )}
+
+    <button
+      onClick={async () => {
+        await logoutUser();
+        router.push("/");
+      }}
+      className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
+    >
+      Logout
+    </button>
+  </>
+)}
         </div>
 
         {/* Mobile Button */}
@@ -73,18 +114,41 @@ export default function Navbar() {
             Sell
           </Link>
 
-          <Link
-    href="/login"
-    className="rounded-full border border-green-600 px-6 py-2.5 font-medium text-green-700 transition-all duration-300 hover:bg-green-600 hover:text-white"
->
-    Login
-</Link>
+         {!user ? (
+  <>
+    <Link
+      href="/login"
+      className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+    >
+      Login
+    </Link>
 
-          <Link
-            href="/register"
-className="rounded-full bg-green-600 px-6 py-2.5 font-semibold text-white transition-all duration-300 hover:-translate-y-1 hover:bg-green-700 hover:shadow-xl"          >
-            Register
-          </Link>
+    <Link
+      href="/register"
+      className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
+    >
+      Register
+    </Link>
+  </>
+) : (
+  <>
+    {user.role === "customer" && (
+      <Link
+        href="/cart"
+        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+      >
+        Cart
+      </Link>
+    )}
+
+    <button
+      onClick={logoutUser}
+      className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
+    >
+      Logout
+    </button>
+  </>
+)}
         </div>
       )}
     </nav>

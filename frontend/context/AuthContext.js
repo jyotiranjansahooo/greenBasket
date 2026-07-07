@@ -1,5 +1,6 @@
 "use client";
 
+
 import {
   createContext,
   useContext,
@@ -21,20 +22,25 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkUser = useCallback(async () => {
-    try {
-      const data = await getCurrentUser();
+ const checkUser = useCallback(async () => {
+  try {
 
-      setUser(data.user);
+    const data = await getCurrentUser();
 
-      return data.user;
-    } catch (error) {
-      setUser(null);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+
+    setUser(data.user);
+
+
+    return data.user;
+  } catch (error) {
+    console.error("❌ checkUser failed:", error);
+
+    setUser(null);
+    return null;
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     async function init() {

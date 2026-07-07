@@ -1,6 +1,6 @@
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
-
+import Cart from "../models/cart.js";
 
 
 export const placeOrder = async (req, res) => {
@@ -60,6 +60,10 @@ export const placeOrder = async (req, res) => {
       deliveryAddress,
       deliverySlot,
     });
+    await Cart.findOneAndUpdate(
+  { user: req.user._id },
+  { items: [] }
+);
 
     res.status(201).json({
       success: true,

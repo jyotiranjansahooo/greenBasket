@@ -48,7 +48,7 @@ export default function LoginForm() {
           break;
 
         default:
-          router.push("/customer/dashboard");
+          router.push("/");
       }
     } catch (error) {
       toast.error(

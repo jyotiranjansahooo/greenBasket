@@ -1,4 +1,5 @@
 import "./globals.css";
+import NaNvbar from "./components/layout/Navbar";
 import { Fredoka, Poppins, DynaPuff } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
       >
         <QueryProvider>
           <AuthProvider>
+            <NaNvbar />
             <Toaster position="top-right" />
             {children}
           </AuthProvider>

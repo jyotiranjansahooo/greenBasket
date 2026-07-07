@@ -48,11 +48,35 @@ export async function updateProduct(id, formData) {
   return data;
 }
 
-/**
- * Delete Product
- */
+
+//  Delete Product
+ 
 export async function deleteProduct(id) {
   const { data } = await api.delete(`/products/${id}`);
+
+  return data;
+}
+
+  // Public Products
+
+export async function getProducts(params = {}) {
+  const { data } = await api.get("/products", {
+    params,
+  });
+
+  return data;
+}
+
+
+  //Featured Products
+ 
+export async function getFeaturedProducts() {
+  const { data } = await api.get("/products", {
+    params: {
+      limit: 8,
+      sort: "latest",
+    },
+  });
 
   return data;
 }

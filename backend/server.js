@@ -12,6 +12,9 @@ import orderRoutes from "./routes/orderRoutes.js";
 import reviewRoutes from "./routes/reviewRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+
+
 
 dotenv.config();
 await connectDB();
@@ -38,6 +41,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 // Server
