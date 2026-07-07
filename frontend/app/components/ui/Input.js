@@ -19,6 +19,7 @@ export default function Input({
         className={`
           w-full rounded-xl border border-gray-300
           bg-white px-4 py-3
+          text-black placeholder-black/30
           outline-none
           transition-all duration-200
           focus:border-[#79AE6F]

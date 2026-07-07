@@ -20,6 +20,7 @@ export default function Textarea({
         className={`
           w-full rounded-xl border border-gray-300
           bg-white px-4 py-3
+          text-black placeholder-black/30
           outline-none
           resize-none
           transition-all duration-200

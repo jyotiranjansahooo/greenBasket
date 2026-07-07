@@ -5,19 +5,12 @@ import Link from "next/link";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { getImageUrl } from "@/lib/imageUrl";
 
-export default function FarmerProductCard({ product }) {
- // const image = getImageUrl(product.images?.[0]);
+export default function FarmerProductCard({
+  product,
+  onDelete,
+}) {
 
-const rawImage = product.images?.[0];
-console.log("Product:", product);
-console.log("Raw image:", rawImage);
-console.log("API URL:", process.env.NEXT_PUBLIC_API_URL);
-
-const image = getImageUrl(rawImage);
-
-console.log("Final image:", image);
-
-console.log("Final image:", image);
+const image = getImageUrl(product.images?.[0]);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow transition hover:shadow-xl">
@@ -55,10 +48,20 @@ console.log("Final image:", image);
           </Link>
 
           <button
-            className="rounded-lg bg-red-500 px-4 py-2 text-white"
-          >
-            <FiTrash2 />
-          </button>
+  type="button"
+  onClick={() => onDelete(product._id)}
+  className="
+    rounded-lg
+    bg-red-500
+    px-4
+    py-2
+    text-white
+    transition
+    hover:bg-red-600
+  "
+>
+  <FiTrash2 />
+</button>
 
         </div>
 

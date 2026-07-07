@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import {  useState } from "react";
+
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
 
 import { productSchema } from "@/lib/productSchema";
-import { createProduct } from "@/services/productService";
 import useCategories from "@/app/hooks/useCategories";
 
 import Input from "@/app/components/ui/Input";
@@ -16,31 +16,51 @@ import Select from "@/app/components/ui/Select";
 import Button from "@/app/components/ui/Button";
 
 import ImageUpload from "./ImageUpload";
+import { createProduct, updateProduct } from "@/services/productService";
 
-
-export default function ProductForm() {
+export default function ProductForm({ product = null }) {
   const router = useRouter();
 
   const [images, setImages] = useState([]);
+const [existingImages, setExistingImages] = useState(
+  product?.images || []
+);
+  const { categories, loading: categoryLoading } = useCategories();
 
-  const {
-    categories,
-    loading: categoryLoading,
-  } = useCategories();
+ const {
+  register,
+  handleSubmit,
+  formState: {
+    errors,
+    isSubmitting,
+  },
+  reset,
+} = useForm({
+  resolver: zodResolver(productSchema),
 
-  const {
-    register,
-    handleSubmit,
-    formState: {
-      errors,
-      isSubmitting,
-    },
-    reset,
-  } = useForm({
-    resolver: zodResolver(productSchema),
-  });
+  defaultValues: {
+    name: product?.name || "",
+    category:
+      product?.category?._id ||
+      product?.category ||
+      "",
+    description:
+      product?.description || "",
+    price: product?.price ?? "",
+    quantity:
+      product?.quantity ?? "",
+    unit: product?.unit || "",
+    farmingMethod:
+      product?.farmingMethod || "",
+    harvestDate:
+      product?.harvestDate?.slice(0, 10) ||
+      "",
+    origin: product?.origin || "",
+  },
+});
 
-async function onSubmit(values) {
+
+  async function onSubmit(values) {
   try {
     const formData = new FormData();
 
@@ -52,18 +72,42 @@ async function onSubmit(values) {
       formData.append("images", image);
     });
 
-    await createProduct(formData);
+    // Keep existing images
+    existingImages.forEach((image) => {
+      formData.append(
+        "existingImages",
+        image
+      );
+    });
 
-    toast.success("🌱 Product added successfully!");
+    if (product) {
+      await updateProduct(
+        product._id,
+        formData
+      );
 
-    reset();
-    setImages([]);
+      toast.success(
+        "Product updated successfully 🌱"
+      );
+    } else {
+      await createProduct(formData);
 
-    router.push("/farmer/products");
+      toast.success(
+        "Product added successfully 🌱"
+      );
+    }
+
+    if (!product) {
+  reset();
+  setImages([]);
+  setExistingImages([]);
+}
+
+router.push("/farmer/products");
   } catch (error) {
     toast.error(
       error.response?.data?.message ||
-      "Unable to create product."
+        "Unable to save product."
     );
   }
 }
@@ -80,15 +124,12 @@ async function onSubmit(values) {
       "
     >
       <div>
-
-        <h1 className="heading-font text-4xl text-[#346739]">
-          Add Product
-        </h1>
+        <h1 className="heading-font text-4xl text-[#346739]">{product ? "Edit Product" : "Add Product"}</h1>
 
         <p className="body-font mt-2 text-gray-500">
-          Fill in the product details below.
-        </p>
-
+{product
+  ? "Update your product information."
+  : "Fill in the product details below."}        </p>
       </div>
 
       <Input
@@ -106,26 +147,19 @@ async function onSubmit(values) {
       />
 
       <div className="grid gap-6 md:grid-cols-2">
-
         <Select
           label="Category"
           error={errors.category?.message}
           {...register("category")}
         >
-          <option value="">
-            Select Category
-          </option>
+          <option value="">Select Category</option>
 
           {!categoryLoading &&
             categories.map((category) => (
-              <option
-                key={category._id}
-                value={category._id}
-              >
+              <option key={category._id} value={category._id}>
                 {category.name}
               </option>
             ))}
-
         </Select>
 
         <Input
@@ -135,11 +169,9 @@ async function onSubmit(values) {
           error={errors.price?.message}
           {...register("price")}
         />
-
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-
         <Input
           type="number"
           label="Quantity"
@@ -148,67 +180,40 @@ async function onSubmit(values) {
           {...register("quantity")}
         />
 
-        <Select
-          label="Unit"
-          error={errors.unit?.message}
-          {...register("unit")}
-        >
-          <option value="">
-            Select Unit
-          </option>
+        <Select label="Unit" error={errors.unit?.message} {...register("unit")}>
+          <option value="">Select Unit</option>
 
           <option value="kg">Kg</option>
 
           <option value="g">Gram</option>
 
-          <option value="piece">
-            Piece
-          </option>
+          <option value="piece">Piece</option>
 
-          <option value="dozen">
-            Dozen
-          </option>
+          <option value="dozen">Dozen</option>
 
-          <option value="liter">
-            Liter
-          </option>
-
+          <option value="liter">Liter</option>
         </Select>
-
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-
         <Select
           label="Farming Method"
-          error={
-            errors.farmingMethod?.message
-          }
+          error={errors.farmingMethod?.message}
           {...register("farmingMethod")}
         >
-          <option value="">
-            Select Method
-          </option>
+          <option value="">Select Method</option>
 
-          <option value="organic">
-            Organic
-          </option>
+          <option value="organic">Organic</option>
 
-          <option value="conventional">
-            Conventional
-          </option>
-
+          <option value="conventional">Conventional</option>
         </Select>
 
         <Input
           type="date"
           label="Harvest Date"
-          error={
-            errors.harvestDate?.message
-          }
+          error={errors.harvestDate?.message}
           {...register("harvestDate")}
         />
-
       </div>
 
       <Input
@@ -218,23 +223,20 @@ async function onSubmit(values) {
         {...register("origin")}
       />
 
-      <ImageUpload
-        images={images}
-        setImages={setImages}
-      />
-
+<ImageUpload
+  images={images}
+  setImages={setImages}
+  existingImages={existingImages}
+  setExistingImages={
+    setExistingImages
+  }
+/>
       <div className="pt-2">
-
-        <Button
-          loading={isSubmitting}
-          type="submit"
-          className="w-full"
-        >
-          Save Product
-        </Button>
-
+        <Button loading={isSubmitting} type="submit" className="w-full">
+{product
+  ? "Update Product"
+  : "Save Product"}        </Button>
       </div>
-
     </form>
   );
 }

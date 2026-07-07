@@ -222,7 +222,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // Only the product owner or an admin can update
+    // Only owner or admin
     if (
       product.farmer.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
@@ -233,7 +233,7 @@ export const updateProduct = async (req, res) => {
       });
     }
 
-    // If category is being changed, verify it exists
+    // Verify category
     if (req.body.category) {
       const category = await Category.findById(req.body.category);
 
@@ -245,21 +245,31 @@ export const updateProduct = async (req, res) => {
       }
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    // Update fields
+    product.name = req.body.name;
+    product.category = req.body.category;
+    product.description = req.body.description;
+    product.price = req.body.price;
+    product.quantity = req.body.quantity;
+    product.unit = req.body.unit;
+    product.farmingMethod = req.body.farmingMethod;
+    product.harvestDate = req.body.harvestDate;
+    product.origin = req.body.origin;
+
+    // Replace images only if new ones are uploaded
+    if (req.files && req.files.length > 0) {
+      product.images = req.files.map(
+        (file) => `/uploads/products/${file.filename}`
+      );
+    }
+
+    await product.save();
 
     res.status(200).json({
       success: true,
       message: "Product updated successfully",
-      product: updatedProduct,
+      product,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -314,15 +324,16 @@ export const deleteProduct = async (req, res) => {
     });
   }
 };
-// @desc    Get Logged-in Farmer Products
-// @route   GET /api/products/farmer
-// @access  Private (Farmer)
+// @   Get Logged-in Farmer Products
+// @   GET /api/products/farmer
+// @  Private (Farmer)
 
 export const getFarmerProducts = async (req, res) => {
   try {
     const products = await Product.find({
-      farmer: req.user._id,
-    })
+  farmer: req.user._id,
+  availability: true,
+})
       .populate("category", "name")
       .sort({ createdAt: -1 });
 
