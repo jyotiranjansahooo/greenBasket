@@ -1,6 +1,8 @@
 "use client";
 
+
 import { use } from "react";
+import ProductReviews from "@/app/components/products/ProductReviews";
 import useSingleProduct from "@/app/hooks/useSingleProduct";
 import ProductGallery from "@/app/components/products/ProductGallery";
 import ProductInfo from "@/app/components/products/ProductInfo";
@@ -37,21 +39,25 @@ export default function ProductDetailsPage({
     );
   }
 
-  return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+ return (
+  <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <div className="mx-auto max-w-7xl">
 
-  <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2">
+      <div className="grid gap-12 lg:grid-cols-2">
 
-    <ProductGallery
-      images={product.images}
-    />
+        <ProductGallery
+          images={product.images}
+        />
 
-    <ProductInfo
-      product={product}
-    />
+        <ProductInfo
+          product={product}
+        />
 
-  </div>
+      </div>
 
-</main>
-  );
+      <ProductReviews product={product} />
+
+    </div>
+  </main>
+);
 }

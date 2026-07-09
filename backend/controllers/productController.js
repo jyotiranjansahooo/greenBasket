@@ -38,9 +38,11 @@ export const createProduct = async (req, res) => {
     }
 
     // Images uploaded by Multer
-    const imagePaths = req.files
-      ? req.files.map((file) => `/uploads/products/${file.filename}`)
-      : [];
+  const imagePaths = req.files
+  ? req.files.map(
+      (file) => `/api/uploads/products/${file.filename}`
+    )
+  : [];
 
     // Create product
     const product = await Product.create({
@@ -257,11 +259,11 @@ export const updateProduct = async (req, res) => {
     product.origin = req.body.origin;
 
     // Replace images only if new ones are uploaded
-    if (req.files && req.files.length > 0) {
-      product.images = req.files.map(
-        (file) => `/uploads/products/${file.filename}`
-      );
-    }
+   if (req.files && req.files.length > 0) {
+  product.images = req.files.map(
+    (file) => `/api/uploads/products/${file.filename}`
+  );
+}
 
     await product.save();
 

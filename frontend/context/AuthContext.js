@@ -24,16 +24,16 @@ export function AuthProvider({ children }) {
 
  const checkUser = useCallback(async () => {
   try {
-
     const data = await getCurrentUser();
-
 
     setUser(data.user);
 
-
     return data.user;
   } catch (error) {
-    console.error("❌ checkUser failed:", error);
+    // Ignore 401 - it just means no one is logged in.
+    if (error.response?.status !== 401) {
+      console.error(error);
+    }
 
     setUser(null);
     return null;

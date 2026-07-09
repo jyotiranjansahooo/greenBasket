@@ -1,11 +1,10 @@
 import Category from "../models/category.js";
 
-
-
 export const createCategory = async (req, res) => {
   try {
-    const { name, description, image } = req.body;
+    const { name, description } = req.body;
 
+    const image = req.file ? `/uploads/categories/${req.file.filename}` : "";
     if (!name || !name.toString().trim()) {
       return res.status(400).json({
         success: false,
@@ -46,8 +45,6 @@ export const createCategory = async (req, res) => {
   }
 };
 
-
-
 export const getCategories = async (req, res) => {
   try {
     const categories = await Category.find({ isActive: true });
@@ -66,8 +63,6 @@ export const getCategories = async (req, res) => {
     });
   }
 };
-
-
 
 export const getCategoryById = async (req, res) => {
   try {
@@ -97,11 +92,13 @@ export const getCategoryById = async (req, res) => {
   }
 };
 
-
-
 export const updateCategory = async (req, res) => {
   try {
     const updateData = { ...req.body };
+    if (req.file) {
+  updateData.image =
+    `/uploads/categories/${req.file.filename}`;
+}
 
     if (updateData.name) {
       const normalizedName = updateData.name.toString().trim().toLowerCase();
@@ -126,7 +123,7 @@ export const updateCategory = async (req, res) => {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!category) {
@@ -150,8 +147,6 @@ export const updateCategory = async (req, res) => {
     });
   }
 };
-
-
 
 export const deleteCategory = async (req, res) => {
   try {

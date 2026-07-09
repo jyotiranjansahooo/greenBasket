@@ -60,7 +60,7 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-green-50 px-4">
+    <div className="flex min-h-screen items-center justify-center text-gray-900 bg-green-50 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
 
         <div className="mb-8 text-center">

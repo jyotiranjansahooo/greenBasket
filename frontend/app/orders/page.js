@@ -39,7 +39,11 @@ const broken = orders.filter(
     order.products.some((p) => !p.product)
 );
 
-console.log(broken[0].products);
+console.log("Broken orders:", broken);
+
+if (broken.length > 0) {
+  console.log(broken[0].products);
+}
 return (
     <main className="min-h-screen bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-6xl">

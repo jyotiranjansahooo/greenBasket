@@ -28,67 +28,80 @@ const { user, logoutUser } = useAuth();
 </Link>
 
         {/* Desktop Menu */}
-        <div className="hidden items-center gap-8 md:flex">
-          <Link href="/" className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full">
-            Home
-          </Link>
+ {/* Desktop Menu */}
+<div className="hidden items-center gap-8 md:flex">
+  <Link
+    href="/"
+    className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
+  >
+    Home
+  </Link>
 
-          <Link href="/products" className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full">
-            Products
-          </Link>
+  <Link
+    href="/products"
+    className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
+  >
+    Products
+  </Link>
+ 
 
-          <Link href="/farmer/dashboard" className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full">
-            Sell
-          </Link>
 
-          {!user ? (
-  <>
-    <Link
-      href="/login"
-      className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
-    >
-      Login
-    </Link>
 
-    <Link
-      href="/register"
-      className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
-    >
-      Register
-    </Link>
-  </>
-) : (
-  <>
-    {user.role === "customer" && (
+  {!user ? (
+    <>
       <Link
-        href="/cart"
-        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+        href="/login"
+        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
       >
-        Cart
+        Login
       </Link>
-    )}
 
-    {user.role === "farmer" && (
       <Link
-        href="/farmer/dashboard"
-        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
+        href="/register"
+        className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
       >
-        Dashboard
+        Register
       </Link>
-    )}
+    </>
+  ) : (
+    <>
+  {user.role === "customer" && (
+    <>
+      <Link href="/cart">Cart</Link>
 
-    <button
-      onClick={async () => {
-        await logoutUser();
-        router.push("/");
-      }}
-      className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
-    >
-      Logout
-    </button>
-  </>
-)}
-        </div>
+      <Link href="/orders">
+        My Orders
+      </Link>
+    </>
+  )}
+
+  {user.role === "farmer" && (
+    <Link href="/farmer/dashboard">
+      Dashboard
+    </Link>
+  )}
+
+  {user.role === "admin" && (
+    <Link href="/admin/dashboard">
+      Admin Dashboard
+    </Link>
+  )}
+
+  <Link href="/profile">
+    Profile
+  </Link>
+
+  <button
+    onClick={async () => {
+      await logoutUser();
+      router.push("/");
+    }}
+  >
+    Logout
+  </button>
+</>
+  )}
+</div>
 
         {/* Mobile Button */}
         <button
@@ -110,45 +123,44 @@ const { user, logoutUser } = useAuth();
             Products
           </Link>
 
-          <Link href="/farmer/dashboard" className="block">
-            Sell
-          </Link>
-
-         {!user ? (
+         {user.role === "customer" && (
   <>
-    <Link
-      href="/login"
-      className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
-    >
-      Login
+    <Link href="/cart" className="block">
+      Cart
     </Link>
 
-    <Link
-      href="/register"
-      className="rounded-lg bg-green-600 px-5 py-2 text-white transition hover:bg-green-700"
-    >
-      Register
+    <Link href="/orders" className="block">
+      My Orders
     </Link>
-  </>
-) : (
-  <>
-    {user.role === "customer" && (
-      <Link
-        href="/cart"
-        className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600"
-      >
-        Cart
-      </Link>
-    )}
-
-    <button
-      onClick={logoutUser}
-      className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
-    >
-      Logout
-    </button>
   </>
 )}
+
+{(user.role === "farmer" || user.role === "admin") && (
+  <Link
+    href={
+      user.role === "farmer"
+        ? "/farmer/dashboard"
+        : "/admin/dashboard"
+    }
+    className="block"
+  >
+    Dashboard
+  </Link>
+)}
+
+<Link href="/profile" className="block">
+  Profile
+</Link>
+
+<button
+  onClick={async () => {
+    await logoutUser();
+    router.push("/");
+  }}
+  className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
+>
+  Logout
+</button>
         </div>
       )}
     </nav>

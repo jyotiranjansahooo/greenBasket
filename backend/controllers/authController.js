@@ -173,3 +173,56 @@ export const getCurrentUser = async (req, res) => {
     });
   }
 };
+
+// Get Profile
+export const getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// Update Profile
+export const updateProfile = async (req, res) => {
+  try {
+    const {
+      name,
+      phone,
+      address,
+    } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    user.name = name;
+    user.phone = phone;
+    user.address = address;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};

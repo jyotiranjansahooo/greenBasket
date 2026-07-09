@@ -8,12 +8,12 @@ export function getImageUrl(path) {
     return path;
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL.replace("/api", "");
+const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  // Old DB records: "tomato.jpg"
-  if (!path.startsWith("/")) {
-    path = `/uploads/products/${path}`;
-  }
+// Old DB records: "tomato.jpg"
+if (!path.startsWith("/")) {
+  path = `/api/uploads/products/${path}`;
+}
 
   return `${baseUrl}${path}`;
 }

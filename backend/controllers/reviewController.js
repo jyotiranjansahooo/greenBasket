@@ -2,9 +2,28 @@ import Review from "../models/Review.js";
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 
+const updateProductRating = async (productId) => {
+  const reviews = await Review.find({
+    product: productId,
+  });
+
+  const numReviews = reviews.length;
+
+  const rating =
+    numReviews === 0
+      ? 0
+      : reviews.reduce(
+          (sum, review) => sum + review.rating,
+          0
+        ) / numReviews;
+
+  await Product.findByIdAndUpdate(productId, {
+    rating,
+    numReviews,
+  });
+};
+
 //    Create Review
-
-
 export const createReview = async (req, res) => {
   try {
     const { productId, rating, comment } = req.body;
@@ -52,6 +71,7 @@ export const createReview = async (req, res) => {
       rating,
       comment,
     });
+await updateProductRating(productId);
 
     res.status(201).json({
       success: true,
@@ -95,7 +115,52 @@ export const getProductReviews = async (req, res) => {
     });
   }
 };
+export const canReviewProduct = async (req, res) => {
+  try {
+    const { productId } = req.params;
 
+    // Must be a customer
+    if (req.user.role !== "customer") {
+      return res.json({
+        success: true,
+        canReview: false,
+      });
+    }
+
+    // Must have a delivered order
+    const order = await Order.findOne({
+      customer: req.user._id,
+      "products.product": productId,
+      status: "Delivered",
+    });
+
+    if (!order) {
+      return res.json({
+        success: true,
+        canReview: false,
+      });
+    }
+
+    // Must not have already reviewed
+    const existingReview = await Review.findOne({
+      customer: req.user._id,
+      product: productId,
+    });
+
+    res.json({
+      success: true,
+      canReview: !existingReview,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
 
 export const updateReview = async (req, res) => {
   try {
@@ -119,6 +184,7 @@ export const updateReview = async (req, res) => {
     review.comment = req.body.comment || review.comment;
 
     await review.save();
+    await updateProductRating(review.product);
 
     res.status(200).json({
       success: true,
@@ -155,8 +221,9 @@ export const deleteReview = async (req, res) => {
         message: "Access denied",
       });
     }
-
+const productId = review.product;
     await review.deleteOne();
+    await updateProductRating(productId);
 
     res.status(200).json({
       success: true,
