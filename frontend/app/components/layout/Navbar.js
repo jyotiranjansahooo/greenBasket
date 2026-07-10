@@ -37,12 +37,7 @@ const { user, logoutUser } = useAuth();
     Home
   </Link>
 
-  <Link
-    href="/products"
-    className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-  >
-    Products
-  </Link>
+  
  
 
 
@@ -72,6 +67,12 @@ const { user, logoutUser } = useAuth();
       <Link href="/orders">
         My Orders
       </Link>
+      <Link
+    href="/products"
+    className="relative font-medium text-gray-800 transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
+  >
+    Products
+  </Link>
     </>
   )}
 
@@ -81,11 +82,36 @@ const { user, logoutUser } = useAuth();
     </Link>
   )}
 
-  {user.role === "admin" && (
-    <Link href="/admin/dashboard">
-      Admin Dashboard
+ {user.role === "admin" && (
+  <>
+  <Link
+  href="/admin/products"
+  className="relative font-medium text-gray-800 transition hover:text-green-600"
+>
+  Products
+</Link>
+    <Link
+      href="/admin/dashboard"
+      className="relative font-medium text-gray-800 transition hover:text-green-600"
+    >
+      Dashboard
     </Link>
-  )}
+
+    <Link
+      href="/admin/farmers"
+      className="relative font-medium text-gray-800 transition hover:text-green-600"
+    >
+      Farmers
+    </Link>
+
+    <Link
+      href="/admin/categories"
+      className="relative font-medium text-gray-800 transition hover:text-green-600"
+    >
+      Categories
+    </Link>
+  </>
+)}
 
   <Link href="/profile">
     Profile
@@ -114,7 +140,7 @@ const { user, logoutUser } = useAuth();
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="space-y-4 bg-white px-6 py-5 shadow-md md:hidden">
+        <div className="space-y-4 text-gray-700 bg-white px-6 py-5 shadow-md md:hidden">
           <Link href="/" className="block">
             Home
           </Link>

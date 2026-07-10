@@ -33,3 +33,13 @@ export async function updateOrderStatus(id, status) {
 
   return data;
 }
+//cancel order
+export const cancelOrder = async (
+  orderId
+) => {
+  const { data } = await api.put(
+    `/orders/${orderId}/cancel`
+  );
+
+  return data;
+};

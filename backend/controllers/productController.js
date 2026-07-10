@@ -287,44 +287,21 @@ export const updateProduct = async (req, res) => {
 
 
 export const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id);
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
-    }
-
-    // Only owner or admin
-    if (
-      product.farmer.toString() !== req.user._id.toString() &&
-      req.user.role !== "admin"
-    ) {
-      return res.status(403).json({
-        success: false,
-        message: "Access denied",
-      });
-    }
-
-    product.availability = false;
-
-    await product.save();
-
-    res.status(200).json({
-      success: true,
-      message: "Product deleted successfully",
-    });
-
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
+  if (!product) {
+    return res.status(404).json({
       success: false,
-      message: "Server Error",
+      message: "Product not found",
     });
   }
+
+  await product.deleteOne();
+
+  res.status(200).json({
+    success: true,
+    message: "Product deleted successfully",
+  });
 };
 // @   Get Logged-in Farmer Products
 // @   GET /api/products/farmer
@@ -337,7 +314,7 @@ export const getFarmerProducts = async (req, res) => {
   availability: true,
 })
       .populate("category", "name")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 });a
 
     res.status(200).json({
       success: true,

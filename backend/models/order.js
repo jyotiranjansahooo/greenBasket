@@ -71,11 +71,17 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
 
-    paymentStatus: {
-      type: String,
-      enum: ["Pending", "Paid"],
-      default: "Pending",
-    },
+    paymentMethod: {
+  type: String,
+  enum: ["COD", "ONLINE"],
+  default: "COD",
+},
+
+paymentStatus: {
+  type: String,
+  enum: ["Pending", "Paid"],
+  default: "Pending",
+},
   },
   {
     timestamps: true,

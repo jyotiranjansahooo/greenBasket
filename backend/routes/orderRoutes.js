@@ -6,6 +6,7 @@ import {
   getFarmerOrders,
   getOrderById,
   updateOrderStatus,
+  cancelOrder,
 } from "../controllers/orderController.js";
 
 import { protect, authorize } from "../middleware/authMiddleware.js";
@@ -38,6 +39,12 @@ router.put(
   protect,
   authorize("farmer", "admin"),
   updateOrderStatus
+);
+router.put(
+  "/:id/cancel",
+  protect,
+  authorize("customer"),
+  cancelOrder
 );
 
 export default router;

@@ -4,6 +4,9 @@ import cors from "cors";
 import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import path from "path";
+import farmerRoutes from "./routes/farmerRoutes.js";
+
+
 
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -42,7 +45,7 @@ app.use("/api/reviews", reviewRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/cart", cartRoutes);
-
+app.use("/api/farmer", farmerRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

@@ -14,6 +14,7 @@ const queryClient = useQueryClient();
 
 const [deliveryAddress, setDeliveryAddress] = useState("");
 const [deliverySlot, setDeliverySlot] = useState("Morning (8AM - 12PM)");
+const [paymentMethod, setPaymentMethod] = useState("COD");
 
 const orderMutation = useMutation({
   mutationFn: placeOrder,
@@ -81,6 +82,27 @@ const orderMutation = useMutation({
   <option>Afternoon (12PM - 4PM)</option>
   <option>Evening (4PM - 8PM)</option>
 </select>
+<div className="mt-4">
+  <label className="mb-2 block font-medium">
+    Payment Method
+  </label>
+
+  <select
+    value={paymentMethod}
+    onChange={(e) =>
+      setPaymentMethod(e.target.value)
+    }
+    className="w-full rounded-lg border p-3"
+  >
+    <option value="COD">
+      Cash on Delivery
+    </option>
+
+    <option value="ONLINE">
+      Online Payment (Demo)
+    </option>
+  </select>
+</div>
 
           </div>
 
@@ -128,13 +150,14 @@ const orderMutation = useMutation({
     }
 
     orderMutation.mutate({
-      products: items.map((item) => ({
-        product: item.product._id,
-        quantity: item.quantity,
-      })),
-      deliveryAddress,
-      deliverySlot,
-    });
+  products: items.map((item) => ({
+    product: item.product._id,
+    quantity: item.quantity,
+  })),
+  deliveryAddress,
+  deliverySlot,
+  paymentMethod,
+});
   }}
   disabled={orderMutation.isPending}
   className="mt-8 w-full rounded-xl bg-[#346739] py-4 text-lg font-semibold text-white transition hover:bg-[#2c5c30] disabled:opacity-60"
