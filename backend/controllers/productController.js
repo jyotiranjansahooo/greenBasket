@@ -82,16 +82,17 @@ export const createProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   try {
     const {
-      search,
-      category,
-      farmer,
-      farmingMethod,
-      minPrice,
-      maxPrice,
-      page = 1,
-      limit = 10,
-      sort = "latest",
-    } = req.query;
+  search,
+  category,
+  farmer,
+  farmingMethod,
+  minPrice,
+  maxPrice,
+  rating,
+  page = 1,
+  limit = 10,
+  sort = "latest",
+} = req.query;
 
     const query = {
       availability: true,
@@ -132,25 +133,39 @@ export const getProducts = async (req, res) => {
         query.price.$lte = Number(maxPrice);
       }
     }
+    // Rating filter
+if (rating) {
+  query.rating = {
+    $gte: Number(rating),
+  };
+}
 
     let sortOption = {};
 
     switch (sort) {
-      case "priceAsc":
-        sortOption.price = 1;
-        break;
+  case "priceAsc":
+    sortOption.price = 1;
+    break;
 
-      case "priceDesc":
-        sortOption.price = -1;
-        break;
+  case "priceDesc":
+    sortOption.price = -1;
+    break;
 
-      case "oldest":
-        sortOption.createdAt = 1;
-        break;
+  case "rating":
+    sortOption.rating = -1;
+    break;
 
-      default:
-        sortOption.createdAt = -1;
-    }
+  case "popular":
+    sortOption.numReviews = -1;
+    break;
+
+  case "oldest":
+    sortOption.createdAt = 1;
+    break;
+
+  default:
+    sortOption.createdAt = -1;
+}
 
     const skip = (page - 1) * limit;
 

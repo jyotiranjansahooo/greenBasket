@@ -1,5 +1,7 @@
 "use client";
 
+
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
@@ -23,8 +25,13 @@ export default function Navbar() {
           href="/"
           className="group flex items-center gap-2 text-2xl font-bold text-green-700"
         >
-          <FaShoppingBasket className="transition duration-300 group-hover:rotate-12 group-hover:scale-110" />
-
+<Image
+  src="/icon.png"
+  alt="Green Basket Logo"
+  width={46}
+  height={46}
+  className="transition duration-300 group-hover:rotate-12 group-hover:scale-110"
+/>
           <span className="logo-font tracking-wide ">Green Basket</span>
         </Link>
 

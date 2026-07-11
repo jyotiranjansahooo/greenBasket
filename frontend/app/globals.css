@@ -57,3 +57,50 @@ body {
 .body-font {
   font-family: var(--font-poppins);
 }
+
+.filter-input {
+  height: 48px;
+  border: 1px solid #d1d5db;
+  border-radius: 14px;
+  padding: 0 10px;
+  background: #f9fafb;
+  color: #374151;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-input:focus {
+  border-color: #346739;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(52, 103, 57, 0.1);
+}
+
+.filter-apply-btn {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: #346739;
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.filter-apply-btn:hover {
+  background: #2c5c30;
+}
+
+.filter-clear-btn {
+  height: 48px;
+  padding: 0 24px;
+  border-radius: 14px;
+  background: #fff5f5;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.filter-clear-btn:hover {
+  background: #fee2e2;
+}

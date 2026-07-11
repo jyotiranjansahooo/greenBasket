@@ -29,7 +29,7 @@ export default function ProductDetailsPage({
 
         <div className="grid gap-12 lg:grid-cols-2">
 
-  <div className="h-[500px] animate-pulse rounded-3xl bg-gray-200" />
+  <div className="h-125 animate-pulse rounded-3xl bg-gray-200" />
 
   <div className="space-y-6">
 
