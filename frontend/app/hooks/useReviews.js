@@ -8,8 +8,7 @@ export default function useReviews(productId) {
     queryKey: ["reviews", productId],
 
     queryFn: async () => {
-      const data =
-        await getProductReviews(productId);
+      const data = await getProductReviews(productId);
 
       return data.reviews;
     },

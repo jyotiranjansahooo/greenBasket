@@ -1,6 +1,5 @@
 "use client";
 
-
 import {
   createContext,
   useContext,
@@ -15,6 +14,7 @@ import {
   logout,
   getCurrentUser,
 } from "@/services/authService";
+import FullScreenLoader from "@/app/components/common/FullScreenLoader";
 
 const AuthContext = createContext(null);
 
@@ -22,25 +22,25 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
- const checkUser = useCallback(async () => {
-  try {
-    const data = await getCurrentUser();
+  const checkUser = useCallback(async () => {
+    try {
+      const data = await getCurrentUser();
 
-    setUser(data.user);
+      setUser(data.user);
 
-    return data.user;
-  } catch (error) {
-    // Ignore 401 - it just means no one is logged in.
-    if (error.response?.status !== 401) {
-      console.error(error);
+      return data.user;
+    } catch (error) {
+      // Ignore 401 - it just means no one is logged in.
+      if (error.response?.status !== 401) {
+        console.error(error);
+      }
+
+      setUser(null);
+      return null;
+    } finally {
+      setLoading(false);
     }
-
-    setUser(null);
-    return null;
-  } finally {
-    setLoading(false);
-  }
-}, []);
+  }, []);
 
   useEffect(() => {
     async function init() {
@@ -75,20 +75,25 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        loginUser,
-        registerUser,
-        logoutUser,
-        checkUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+ if (loading) {
+  return <FullScreenLoader />;
+}
+
+return (
+  <AuthContext.Provider
+    value={{
+      user,
+      loading,
+      loginUser,
+      registerUser,
+      logoutUser,
+      checkUser,
+    }}
+  >
+    {children}
+  </AuthContext.Provider>
+);
+  
 }
 
 export function useAuth() {

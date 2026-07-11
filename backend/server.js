@@ -6,8 +6,6 @@ import cookieParser from "cookie-parser";
 import path from "path";
 import farmerRoutes from "./routes/farmerRoutes.js";
 
-
-
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -16,12 +14,10 @@ import reviewRoutes from "./routes/reviewRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
-
-
+import wishlistRoutes from "./routes/wishlistRoutes.js";
 
 dotenv.config();
 await connectDB();
-
 
 const app = express();
 
@@ -30,12 +26,11 @@ app.use(
   cors({
     origin: "http://localhost:3001",
     credentials: true,
-  })
-);app.use(express.json());
+  }),
+);
+app.use(express.json());
 app.use(cookieParser());
 app.use("/api/uploads", express.static("uploads"));
-
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
@@ -46,6 +41,9 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/farmer", farmerRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+
+
 
 // Server
 const PORT = process.env.PORT || 5000;

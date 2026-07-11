@@ -1,46 +1,31 @@
 "use client";
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import toast from "react-hot-toast";
-
-import {
-  getMyOrders,
-  cancelOrder,
-} from "@/services/orderService";
+import Link from "next/link";
+import { getMyOrders, cancelOrder } from "@/services/orderService";
+import pagetransition from "@/app/components/common/PageTransition";
 
 export default function OrdersPage() {
   const queryClient = useQueryClient();
 
-const cancelMutation = useMutation({
-  mutationFn: cancelOrder,
+  const cancelMutation = useMutation({
+    mutationFn: cancelOrder,
 
-  onSuccess: () => {
-    toast.success(
-      "Order cancelled"
-    );
+    onSuccess: () => {
+      toast.success("Order cancelled");
 
-    queryClient.invalidateQueries({
-      queryKey: ["orders"],
-    });
-  },
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
+      });
+    },
 
-  onError: (error) => {
-    toast.error(
-      error.response?.data?.message ||
-        "Failed to cancel order"
-    );
-  },
-});
-  const {
-    data,
-    isPending,
-    error,
-  } = useQuery({
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to cancel order");
+    },
+  });
+  const { data, isPending, error } = useQuery({
     queryKey: ["orders"],
     queryFn: getMyOrders,
   });
@@ -48,9 +33,7 @@ const cancelMutation = useMutation({
   if (isPending) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl">
-          Loading orders...
-        </h1>
+        <h1 className="text-3xl">Loading orders...</h1>
       </main>
     );
   }
@@ -58,9 +41,7 @@ const cancelMutation = useMutation({
   if (error) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl text-red-500">
-          Failed to load orders
-        </h1>
+        <h1 className="text-3xl text-red-500">Failed to load orders</h1>
       </main>
     );
   }
@@ -76,104 +57,89 @@ const cancelMutation = useMutation({
   ];
 
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <pagetransition>
+    <main className="min-h-screen text-gray-700 bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-6xl">
-
-        <h1 className="mb-10 text-5xl font-bold text-[#346739]">
-          My Orders
-        </h1>
+        <h1 className="mb-10 text-5xl font-bold text-[#346739]">My Orders</h1>
 
         {orders.length === 0 ? (
-          <div className="rounded-2xl bg-white p-10 text-center shadow">
-            <h2 className="text-2xl font-bold">
-              No orders yet
-            </h2>
+  <div className="rounded-3xl bg-white p-16 text-center shadow">
+    <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-blue-100 text-6xl">
+      📦
+    </div>
 
-            <p className="mt-3 text-gray-500">
-              Your orders will appear here.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
-
-            {orders.map((order) => (
-              <div
-                key={order._id}
-                className="rounded-2xl bg-white p-6 shadow"
-              >
-                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-
-  <div>
-    <h2 className="text-2xl font-bold">
-      Farmer: {order.farmer?.name || "Unknown Farmer"}
+    <h2 className="mt-8 text-4xl font-bold text-[#346739]">
+      No orders yet
     </h2>
 
-    <p className="text-gray-500">
-      {order.farmer?.farmLocation || "-"}
+    <p className="mt-4 text-lg text-gray-500">
+      You haven`t placed any orders yet. Start exploring fresh products.
     </p>
 
-    <div className="mt-4 space-y-2">
-
-      <div>
-        <span className="font-semibold">
-          Payment Method:
-        </span>{" "}
-        {order.paymentMethod === "ONLINE"
-          ? "Online Payment"
-          : "Cash on Delivery"}
-      </div>
-
-      <div>
-        <span className="font-semibold">
-          Payment Status:
-        </span>
-
-        <span
-          className={`ml-2 rounded-full px-3 py-1 text-sm ${
-            order.paymentStatus === "Paid"
-              ? "bg-green-100 text-green-700"
-              : "bg-yellow-100 text-yellow-700"
-          }`}
-        >
-          {order.paymentStatus}
-        </span>
-      </div>
-
-    </div>
+    <Link
+      href="/products"
+      className="mt-8 inline-block rounded-2xl bg-[#346739] px-8 py-4 font-semibold text-white transition hover:bg-[#2c5c30]"
+    >
+      Start Shopping
+    </Link>
   </div>
+) : (
+          <div className="space-y-6">
+            {orders.map((order) => (
+              <div key={order._id} className="rounded-2xl bg-white p-6 shadow">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <h2 className="text-2xl font-bold">
+                      Farmer: {order.farmer?.name || "Unknown Farmer"}
+                    </h2>
 
-  <span className="rounded-full bg-green-100 px-4 py-2 text-green-700">
-    {order.status}
-  </span>
+                    <p className="text-gray-500">
+                      {order.farmer?.farmLocation || "-"}
+                    </p>
 
-</div>
+                    <div className="mt-4 space-y-2">
+                      <div>
+                        <span className="font-semibold">Payment Method:</span>{" "}
+                        {order.paymentMethod === "ONLINE"
+                          ? "Online Payment"
+                          : "Cash on Delivery"}
+                      </div>
 
-                <div className="mt-6 space-y-2">
+                      <div>
+                        <span className="font-semibold">Payment Status:</span>
 
-                  {order.products.map(
-                    (item, index) => (
-                      <div
-                        key={
-                          item.product?._id ||
-                          index
-                        }
-                        className="flex justify-between"
-                      >
-                        <span>
-                          {item.product?.name ||
-                            "Product unavailable"}{" "}
-                          × {item.quantity}
-                        </span>
-
-                        <span>
-                          ₹
-                          {item.price *
-                            item.quantity}
+                        <span
+                          className={`ml-2 rounded-full px-3 py-1 text-sm ${
+                            order.paymentStatus === "Paid"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {order.paymentStatus}
                         </span>
                       </div>
-                    )
-                  )}
+                    </div>
+                  </div>
 
+                  <span className="rounded-full bg-green-100 px-4 py-2 text-green-700">
+                    {order.status}
+                  </span>
+                </div>
+
+                <div className="mt-6 space-y-2">
+                  {order.products.map((item, index) => (
+                    <div
+                      key={item.product?._id || index}
+                      className="flex justify-between"
+                    >
+                      <span>
+                        {item.product?.name || "Product unavailable"} ×{" "}
+                        {item.quantity}
+                      </span>
+
+                      <span>₹{item.price * item.quantity}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <hr className="my-6" />
@@ -181,32 +147,22 @@ const cancelMutation = useMutation({
                 <div className="flex justify-between text-xl font-bold">
                   <span>Total</span>
 
-                  <span>
-                    ₹{order.totalAmount}
-                  </span>
+                  <span>₹{order.totalAmount}</span>
                 </div>
-                {["Pending", "Confirmed"].includes(
-  order.status
-) && (
-  <button
-    onClick={() =>
-      cancelMutation.mutate(
-        order._id
-      )
-    }
-    className="mt-6 rounded-xl bg-red-500 px-5 py-3 text-white hover:bg-red-600"
-  >
-    Cancel Order
-  </button>
-)}
-
+                {["Pending", "Confirmed"].includes(order.status) && (
+                  <button
+                    onClick={() => cancelMutation.mutate(order._id)}
+                    className="mt-6 rounded-xl bg-red-500 px-5 py-3 text-white hover:bg-red-600"
+                  >
+                    Cancel Order
+                  </button>
+                )}
               </div>
             ))}
-
           </div>
         )}
-
       </div>
     </main>
+    </pagetransition>
   );
 }

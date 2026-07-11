@@ -13,20 +13,24 @@ export async function createReview(reviewData) {
 // Get Product Reviews
 export async function getProductReviews(productId) {
   const { data } = await api.get(
-    `/reviews/${productId}`
+    `/reviews/product/${productId}`
   );
 
   return data;
 }
 
 // Update Review
-export async function updateReview(
+export async function updateReview({
   id,
-  reviewData
-) {
+  rating,
+  comment,
+}) {
   const { data } = await api.put(
     `/reviews/${id}`,
-    reviewData
+    {
+      rating,
+      comment,
+    }
   );
 
   return data;

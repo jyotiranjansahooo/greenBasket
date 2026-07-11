@@ -6,16 +6,15 @@ import FadeUp from "@/app/components/animation/FadeUp";
 import HeroStats from "./HeroStats";
 import Floating from "@/app/components/animation/Floating";
 import HeroBackground from "./HeroBackground";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Hero() {
+  const { user } = useAuth();
   return (
     <section className="relative overflow-hidden bg-[#F7FAF5]">
-        <HeroBackground />
-
-  <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-[#9FCB98]/30 blur-3xl"></div>
-
-  <div className="absolute right-0 bottom-10 h-96 w-96 rounded-full bg-[#79AE6F]/20 blur-3xl"></div>
-      {" "}
+      <HeroBackground />
+      <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-[#9FCB98]/30 blur-3xl"></div>
+      <div className="absolute right-0 bottom-10 h-96 w-96 rounded-full bg-[#79AE6F]/20 blur-3xl"></div>{" "}
       <div className="mx-auto flex min-h-[90vh] max-w-7xl flex-col items-center justify-between gap-12 px-6 py-20 lg:flex-row">
         {/* Left */}
         <div className="max-w-xl">
@@ -48,12 +47,14 @@ export default function Hero() {
                 Shop Now
               </Link>
 
-              <Link
-                href="/register"
-                className="rounded-full border-2 border-[#346739] px-8 py-4 font-semibold text-[#346739] transition-all duration-300 hover:bg-[#346739] hover:text-white"
-              >
-                Become a Farmer
-              </Link>
+              {!user && (
+                <Link
+                  href="/register"
+                  className="rounded-full border-2 border-[#346739] px-8 py-4 font-semibold text-[#346739] transition-all duration-300 hover:bg-[#346739] hover:text-white"
+                >
+                  Become a Farmer
+                </Link>
+              )}
             </div>
           </FadeUp>
 
@@ -78,23 +79,14 @@ export default function Hero() {
         </FadeUp>
       </div>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+        <div className="flex flex-col items-center">
+          <span className="mb-2 text-sm text-gray-500">Scroll</span>
 
-  <div className="flex flex-col items-center">
-
-    <span className="mb-2 text-sm text-gray-500">
-      Scroll
-    </span>
-
-    <div className="flex h-10 w-6 justify-center rounded-full border-2 border-[#346739]">
-
-      <div className="mt-1 h-2 w-2 animate-bounce rounded-full bg-[#346739]"></div>
-
-    </div>
-
-  </div>
-
-</div>
+          <div className="flex h-10 w-6 justify-center rounded-full border-2 border-[#346739]">
+            <div className="mt-1 h-2 w-2 animate-bounce rounded-full bg-[#346739]"></div>
+          </div>
+        </div>
+      </div>
     </section>
-    
   );
 }
