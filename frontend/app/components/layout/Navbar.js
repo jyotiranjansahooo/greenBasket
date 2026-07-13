@@ -37,13 +37,13 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Menu */}
-        {/* Desktop Menu */}
+
         <div className="hidden items-center gap-8 md:flex">
-          <Link
-            href="/"
-            className="relative font-medium  transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-          >
+          <Link href="/" className="nav-link">
             Home
+          </Link>
+          <Link href="/about" className="nav-link">
+            About
           </Link>
 
           {!user ? (
@@ -66,19 +66,17 @@ export default function Navbar() {
             <>
               {user?.role === "customer" && (
                 <>
-                  <Link href="/cart">Cart</Link>
+                  <Link href="/cart" className="nav-link">
+                    Cart
+                  </Link>
 
-                  <Link href="/orders">My Orders</Link>
-                  <Link
-                    href="/products"
-                    className="relative font-medium  transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
-                  >
+                  <Link href="/orders" className="nav-link">
+                    My Orders
+                  </Link>
+                  <Link href="/products" className="nav-link">
                     Products
                   </Link>
-                  <Link
-                    href="/wishlist"
-                    className="relative font-medium transition hover:text-green-600"
-                  >
+                  <Link href="/wishlist" className="nav-link">
                     Wishlist
                     {wishlistCount > 0 && (
                       <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">

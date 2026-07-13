@@ -43,3 +43,14 @@ export const cancelOrder = async (
 
   return data;
 };
+
+
+ // Get Single Order
+ 
+export async function getOrderById(id) {
+  const { data } = await api.get(
+    `/orders/${id}`
+  );
+
+  return data;
+}

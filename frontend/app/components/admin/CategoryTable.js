@@ -136,7 +136,7 @@ const deleteMutation = useMutation({
   >
     Delete
   </button>
-</td>c
+</td>
                 </tr>
               ))
             )}

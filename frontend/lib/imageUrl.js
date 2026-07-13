@@ -3,17 +3,20 @@ export function getImageUrl(path) {
     return "/images/product-placeholder.png";
   }
 
-  // Already a full URL
   if (path.startsWith("http")) {
     return path;
   }
 
-const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
-// Old DB records: "tomato.jpg"
-if (!path.startsWith("/")) {
-  path = `/api/uploads/products/${path}`;
-}
+  // Remove duplicate "/api"
+  if (path.startsWith("/api/")) {
+    path = path.replace("/api", "");
+  }
+
+  if (!path.startsWith("/")) {
+    path = `/uploads/products/${path}`;
+  }
 
   return `${baseUrl}${path}`;
 }

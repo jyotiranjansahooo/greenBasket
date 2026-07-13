@@ -4,9 +4,13 @@ import Order from "../models/Order.js";
 import Category from "../models/category.js";
 
 
+
+// Get all farmers
 export const getAllFarmers = async (req, res) => {
   try {
-    const farmers = await User.find({ role: "farmer" }).select("-password");
+    const farmers = await User.find({
+      role: "farmer",
+    }).select("-password");
 
     res.status(200).json({
       success: true,
@@ -23,10 +27,14 @@ export const getAllFarmers = async (req, res) => {
   }
 };
 
-
+// Verify / unverify farmer
 export const verifyFarmer = async (req, res) => {
   try {
+    console.log("Farmer ID:", req.params.id);
+
     const farmer = await User.findById(req.params.id);
+
+    console.log("Farmer:", farmer);
 
     if (!farmer) {
       return res.status(404).json({
@@ -42,20 +50,23 @@ export const verifyFarmer = async (req, res) => {
       });
     }
 
-    farmer.isVerified = true;
+    farmer.isVerified = !farmer.isVerified;
+
     await farmer.save();
 
     res.status(200).json({
       success: true,
-      message: "Farmer verified successfully",
+      message: farmer.isVerified
+        ? "Farmer verified successfully"
+        : "Farmer verification removed",
       farmer,
     });
   } catch (error) {
-    console.error(error);
+    console.error("VERIFY ERROR:", error);
 
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: error.message,
     });
   }
 };

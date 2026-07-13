@@ -1,6 +1,5 @@
 "use client";
 
-import { global } from "styled-jsx/css";
 import { useState } from "react";
 import useMarketplaceProducts from "@/app/hooks/useMarketplaceProducts";
 import useCategories from "@/app/hooks/useCategories";
@@ -50,6 +49,101 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen text-gray-800 bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-7xl">
+        <div className="mb-10 overflow-hidden rounded-3xl bg-gradient-to-r from-[#346739] to-[#4f9657] p-8 text-white shadow-2xl">
+
+  <div className="grid gap-8 lg:grid-cols-2">
+
+    <div>
+
+      <span className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
+        🌱 Fresh from Local Farmers
+      </span>
+
+      <h1 className="mt-6 text-5xl font-bold">
+        Discover Fresh & Organic Products
+      </h1>
+
+      <p className="mt-4 max-w-xl text-lg text-green-100">
+        Browse fruits, vegetables, dairy products, and more directly from trusted local farmers.
+      </p>
+
+      <div className="mt-8 flex flex-wrap gap-4">
+
+        <button
+          onClick={() =>
+            setDraftFilters((prev) => ({
+              ...prev,
+              farmingMethod: "organic",
+            }))
+          }
+          className="rounded-2xl bg-white px-6 py-3 font-semibold text-[#346739] transition hover:scale-105"
+        >
+          🌿 Organic
+        </button>
+
+        <button
+          onClick={() =>
+            setDraftFilters((prev) => ({
+              ...prev,
+              sort: "popular",
+            }))
+          }
+          className="rounded-2xl border border-white px-6 py-3 font-semibold transition hover:bg-white hover:text-[#346739]"
+        >
+          🔥 Popular
+        </button>
+
+      </div>
+
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+
+      <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <h3 className="text-4xl font-bold">
+          {products.length}+
+        </h3>
+
+        <p className="mt-2 text-green-100">
+          Products
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <h3 className="text-4xl font-bold">
+          {categories.length}+
+        </h3>
+
+        <p className="mt-2 text-green-100">
+          Categories
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <h3 className="text-4xl font-bold">
+          🚚
+        </h3>
+
+        <p className="mt-2 text-green-100">
+          Fast Delivery
+        </p>
+      </div>
+
+      <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
+        <h3 className="text-4xl font-bold">
+          ⭐
+        </h3>
+
+        <p className="mt-2 text-green-100">
+          Top Quality
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
         <div className="mb-10 space-y-4">
 
   <div className="flex items-center gap-4">

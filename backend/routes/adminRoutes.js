@@ -54,4 +54,18 @@ router.put(
   toggleFeaturedProduct
 );
 
+router.get(
+  "/farmers",
+  protect,
+  authorize("admin"),
+  getAllFarmers
+);
+
+router.put(
+  "/farmers/:id/verify",
+  protect,
+  authorize("admin"),
+  verifyFarmer
+);
+
 export default router;

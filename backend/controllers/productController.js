@@ -325,15 +325,13 @@ export const deleteProduct = async (req, res) => {
 export const getFarmerProducts = async (req, res) => {
   try {
     const products = await Product.find({
-  farmer: req.user._id,
-  availability: true,
-})
+      farmer: req.user._id,
+    })
       .populate("category", "name")
-      .sort({ createdAt: -1 });a
+      .populate("farmer", "name");
 
     res.status(200).json({
       success: true,
-      count: products.length,
       products,
     });
   } catch (error) {

@@ -1,6 +1,6 @@
 "use client";
 
-import {  useState } from "react";
+import { useState } from "react";
 
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -22,95 +22,67 @@ export default function ProductForm({ product = null }) {
   const router = useRouter();
 
   const [images, setImages] = useState([]);
-const [existingImages, setExistingImages] = useState(
-  product?.images || []
-);
-  const { categories, loading: categoryLoading } = useCategories();
+  const [existingImages, setExistingImages] = useState(product?.images || []);
+  const { data: categories = [], isPending: categoryLoading } = useCategories();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm({
+    resolver: zodResolver(productSchema),
 
- const {
-  register,
-  handleSubmit,
-  formState: {
-    errors,
-    isSubmitting,
-  },
-  reset,
-} = useForm({
-  resolver: zodResolver(productSchema),
-
-  defaultValues: {
-    name: product?.name || "",
-    category:
-      product?.category?._id ||
-      product?.category ||
-      "",
-    description:
-      product?.description || "",
-    price: product?.price ?? "",
-    quantity:
-      product?.quantity ?? "",
-    unit: product?.unit || "",
-    farmingMethod:
-      product?.farmingMethod || "",
-    harvestDate:
-      product?.harvestDate?.slice(0, 10) ||
-      "",
-    origin: product?.origin || "",
-  },
-});
-
+    defaultValues: {
+      name: product?.name || "",
+      category: product?.category?._id || product?.category || "",
+      description: product?.description || "",
+      price: product?.price ?? "",
+      quantity: product?.quantity ?? "",
+      unit: product?.unit || "",
+      farmingMethod: product?.farmingMethod || "",
+      harvestDate: product?.harvestDate?.slice(0, 10) || "",
+      origin: product?.origin || "",
+    },
+  });
 
   async function onSubmit(values) {
-  try {
-    const formData = new FormData();
+    try {
+      const formData = new FormData();
 
-    Object.entries(values).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
+      Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, value);
+      });
 
-    images.forEach((image) => {
-      formData.append("images", image);
-    });
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
 
-    // Keep existing images
-    existingImages.forEach((image) => {
-      formData.append(
-        "existingImages",
-        image
-      );
-    });
+      // Keep existing images
+      existingImages.forEach((image) => {
+        formData.append("existingImages", image);
+      });
 
-    if (product) {
-      await updateProduct(
-        product._id,
-        formData
-      );
+      if (product) {
+        await updateProduct(product._id, formData);
 
-      toast.success(
-        "Product updated successfully 🌱"
-      );
-    } else {
-      await createProduct(formData);
+        toast.success("Product updated successfully 🌱");
+      } else {
+        await createProduct(formData);
 
-      toast.success(
-        "Product added successfully 🌱"
-      );
+        toast.success("Product added successfully 🌱");
+      }
+
+      if (!product) {
+        reset();
+        setImages([]);
+        setExistingImages([]);
+      }
+
+      router.push("/farmer/products");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to save product.");
     }
-
-    if (!product) {
-  reset();
-  setImages([]);
-  setExistingImages([]);
-}
-
-router.push("/farmer/products");
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message ||
-        "Unable to save product."
-    );
   }
-}
 
   return (
     <form
@@ -124,12 +96,15 @@ router.push("/farmer/products");
       "
     >
       <div>
-        <h1 className="heading-font text-4xl text-[#346739]">{product ? "Edit Product" : "Add Product"}</h1>
+        <h1 className="heading-font text-4xl text-[#346739]">
+          {product ? "Edit Product" : "Add Product"}
+        </h1>
 
         <p className="body-font mt-2 text-gray-500">
-{product
-  ? "Update your product information."
-  : "Fill in the product details below."}        </p>
+          {product
+            ? "Update your product information."
+            : "Fill in the product details below."}{" "}
+        </p>
       </div>
 
       <Input
@@ -154,12 +129,11 @@ router.push("/farmer/products");
         >
           <option value="">Select Category</option>
 
-          {!categoryLoading &&
-            categories.map((category) => (
-              <option key={category._id} value={category._id}>
-                {category.name}
-              </option>
-            ))}
+          {categories?.map((category) => (
+            <option key={category._id} value={category._id}>
+              {category.name}
+            </option>
+          ))}
         </Select>
 
         <Input
@@ -223,19 +197,16 @@ router.push("/farmer/products");
         {...register("origin")}
       />
 
-<ImageUpload
-  images={images}
-  setImages={setImages}
-  existingImages={existingImages}
-  setExistingImages={
-    setExistingImages
-  }
-/>
+      <ImageUpload
+        images={images}
+        setImages={setImages}
+        existingImages={existingImages}
+        setExistingImages={setExistingImages}
+      />
       <div className="pt-2">
         <Button loading={isSubmitting} type="submit" className="w-full">
-{product
-  ? "Update Product"
-  : "Save Product"}        </Button>
+          {product ? "Update Product" : "Save Product"}{" "}
+        </Button>
       </div>
     </form>
   );
