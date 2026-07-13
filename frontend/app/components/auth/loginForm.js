@@ -4,11 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
+
+import { GoogleLogin } from "@react-oauth/google";
+
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
-  const { loginUser } = useAuth();
+
+  const { loginUser, googleLoginUser } = useAuth();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -16,6 +20,7 @@ export default function LoginForm() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -31,10 +36,7 @@ export default function LoginForm() {
     try {
       setLoading(true);
 
-      const user = await loginUser(
-        formData.email,
-        formData.password
-      );
+      const user = await loginUser(formData.email, formData.password);
 
       toast.success("Login successful!");
 
@@ -51,36 +53,24 @@ export default function LoginForm() {
           router.push("/");
       }
     } catch (error) {
-      toast.error(
-        error?.response?.data?.message || "Login failed"
-      );
+      toast.error(error?.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center text-gray-900 bg-green-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-green-50 px-4 text-gray-900">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-
         <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-green-700">
-            🌱 Green Basket
-          </h1>
+          <h1 className="text-4xl font-bold text-green-700">🌱 Green Basket</h1>
 
-          <p className="mt-2 text-gray-500">
-            Login to continue
-          </p>
+          <p className="mt-2 text-gray-500">Login to continue</p>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="mb-2 block text-sm font-semibold">
-              Email
-            </label>
+            <label className="mb-2 block text-sm font-semibold">Email</label>
 
             <input
               type="email"
@@ -94,9 +84,7 @@ export default function LoginForm() {
           </div>
 
           <div>
-            <label className="mb-2 block text-sm font-semibold">
-              Password
-            </label>
+            <label className="mb-2 block text-sm font-semibold">Password</label>
 
             <div className="relative">
               <input
@@ -111,9 +99,7 @@ export default function LoginForm() {
 
               <button
                 type="button"
-                onClick={() =>
-                  setShowPassword(!showPassword)
-                }
+                onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-3 text-sm text-green-700"
               >
                 {showPassword ? "Hide" : "Show"}
@@ -129,6 +115,59 @@ export default function LoginForm() {
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
+
+        <div className="my-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-gray-300" />
+
+          <span className="text-sm text-gray-500">OR</span>
+
+          <div className="h-px flex-1 bg-gray-300" />
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+  onSuccess={async (
+    credentialResponse
+  ) => {
+    try {
+      const user =
+        await googleLoginUser(
+          credentialResponse.credential
+        );
+
+      toast.success(
+        "Login successful!"
+      );
+
+      switch (user.role) {
+        case "admin":
+          router.push(
+            "/admin/dashboard"
+          );
+          break;
+
+        case "farmer":
+          router.push(
+            "/farmer/dashboard"
+          );
+          break;
+
+        default:
+          router.push("/");
+      }
+    } catch (error) {
+      toast.error(
+        "Google login failed"
+      );
+    }
+  }}
+  onError={() => {
+    toast.error(
+      "Google login failed"
+    );
+  }}
+/>
+        </div>
 
         <p className="mt-6 text-center text-sm">
           Don`t have an account?{" "}

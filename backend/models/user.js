@@ -20,17 +20,15 @@ const userSchema = new mongoose.Schema(
     },
 
     password: {
-      type: String,
-      required: [true, "Password is required"],
-      minlength: 8,
-      select: false, // Hide password by default
-    },
+  type: String,
+  minlength: 8,
+  select: false,
+},
 
-    phone: {
-      type: String,
-      required: [true, "Phone number is required"],
-      trim: true,
-    },
+   phone: {
+  type: String,
+  trim: true,
+},
 
     role: {
       type: String,

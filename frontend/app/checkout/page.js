@@ -46,7 +46,7 @@ const orderMutation = useMutation({
   );
 
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <main className="min-h-screen text-gray-700 bg-[#F7FAF5] p-10">
 
       <div className="mx-auto max-w-5xl">
 

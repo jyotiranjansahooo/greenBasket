@@ -129,7 +129,6 @@ export default function ProductReviews({ product }) {
     });
   };
 
-console.log("reviws",reviews);
 
   return (
     <section className="mt-16 rounded-2xl text-gray-800 bg-white p-8 shadow">

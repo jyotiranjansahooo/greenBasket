@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 import User from "../models/User.js";
 import generateToken from "../utils/generateToken.js";
+import { OAuth2Client } from "google-auth-library";
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+// desc    Register a new user, route   POST /api/auth/register, access  Public
 export const registerUser = async (req, res) => {
   try {
     const {
@@ -30,10 +30,7 @@ export const registerUser = async (req, res) => {
     }
 
     // Validate farmer fields
-    if (
-      role === "farmer" &&
-      (!farmLocation || !cropTypes || !farmingMethod)
-    ) {
+    if (role === "farmer" && (!farmLocation || !cropTypes || !farmingMethod)) {
       return res.status(400).json({
         success: false,
         message: "Farmer profile information is required",
@@ -71,7 +68,6 @@ export const registerUser = async (req, res) => {
         isVerified: user.isVerified,
       },
     });
-
   } catch (error) {
     console.error(error);
 
@@ -128,7 +124,6 @@ export const loginUser = async (req, res) => {
         isVerified: user.isVerified,
       },
     });
-
   } catch (error) {
     console.error(error);
 
@@ -163,7 +158,6 @@ export const getCurrentUser = async (req, res) => {
       success: true,
       user: req.user,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -183,7 +177,6 @@ export const getProfile = async (req, res) => {
       success: true,
       user,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -197,32 +190,96 @@ export const getProfile = async (req, res) => {
 // Update Profile
 export const updateProfile = async (req, res) => {
   try {
-    const {
-      name,
-      phone,
-      address,
-    } = req.body;
+  const {
+  name,
+  phone,
+  address,
+} = req.body;
 
-    const user = await User.findById(req.user._id);
+const user =
+  await User.findById(
+    req.user._id
+  );
 
-    user.name = name;
-    user.phone = phone;
-    user.address = address;
+user.name = name;
+user.phone = phone;
+user.address = address;
+if (req.file) {
+  user.profileImage =
+    `/uploads/profiles/${req.file.filename}`;
+}
 
-    await user.save();
+await user.save();
 
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",
       user,
     });
-
   } catch (error) {
     console.error(error);
 
     res.status(500).json({
       success: false,
       message: "Server Error",
+    });
+  }
+};
+// @desc    Google Login
+// @route   POST /api/auth/google
+// @access  Public
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const { email, name, picture } = payload;
+ 
+
+    let user = await User.findOne({
+      email,
+    });
+
+   if (!user) {
+  user = await User.create({
+    name,
+    email,
+    role: "customer",
+
+    password: Math.random()
+      .toString(36)
+      .slice(-10),
+
+    profileImage: picture,
+  });
+} else if (
+  !user.profileImage &&
+  picture
+) {
+  user.profileImage = picture;
+
+  await user.save();
+}
+
+    generateToken(res, user._id);
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Google login failed",
     });
   }
 };

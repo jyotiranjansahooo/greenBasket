@@ -26,3 +26,15 @@ export const getCurrentUser = async () => {
 
   return data;
 };
+export async function googleLogin(
+  credential
+) {
+  const { data } = await api.post(
+    "/auth/google",
+    {
+      credential,
+    }
+  );
+
+  return data;
+}

@@ -4,8 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 export default function CategoryCard({ category }) {
- 
-
   return (
     <Link
       href={`/products?category=${category._id}`}
@@ -20,14 +18,17 @@ export default function CategoryCard({ category }) {
   }
   alt={category.name}
   fill
+  sizes="
+    (max-width: 640px) 100vw,
+    (max-width: 1024px) 50vw,
+    25vw
+  "
   className="object-cover transition duration-500 group-hover:scale-110"
 />
       </div>
 
       <div className="p-6">
-        <h3 className="text-2xl font-bold text-[#346739]">
-          {category.name}
-        </h3>
+        <h3 className="text-2xl font-bold text-[#346739]">{category.name}</h3>
 
         <p className="mt-2 text-gray-600">
           Browse fresh {category.name.toLowerCase()} directly from local

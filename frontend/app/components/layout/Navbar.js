@@ -1,6 +1,5 @@
 "use client";
 
-
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,8 +10,10 @@ import useWishlist from "@/app/hooks/useWishlist";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+
   const router = useRouter();
   const { user, logoutUser } = useAuth();
+  const [showMenu, setShowMenu] = useState(false);
   const { data: wishlistData } = useWishlist();
 
   const wishlistCount = wishlistData?.wishlist?.products?.length || 0;
@@ -25,13 +26,13 @@ export default function Navbar() {
           href="/"
           className="group flex items-center gap-2 text-2xl font-bold text-green-700"
         >
-<Image
-  src="/icon.png"
-  alt="Green Basket Logo"
-  width={46}
-  height={46}
-  className="transition duration-300 group-hover:rotate-12 group-hover:scale-110"
-/>
+          <Image
+            src="/icon.png"
+            alt="Green Basket Logo"
+            width={46}
+            height={46}
+            className="transition duration-300 group-hover:rotate-12 group-hover:scale-110"
+          />
           <span className="logo-font tracking-wide ">Green Basket</span>
         </Link>
 
@@ -123,16 +124,59 @@ export default function Navbar() {
                 </>
               )}
 
-              <Link href="/profile">Profile</Link>
+              <div className="relative">
+                <button
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="overflow-hidden rounded-full border-2 border-green-600 transition hover:scale-105"
+                >
+                  <Image
+                    src={
+                      user?.profileImage
+                        ? user.profileImage.startsWith("http")
+                          ? user.profileImage
+                          : `${process.env.NEXT_PUBLIC_API_URL}${user.profileImage}`
+                        : "/default/avatar.png"
+                    }
+                    alt={user?.name || "Profile"}
+                    width={44}
+                    height={44}
+                    className="h-11 w-11 object-cover"
+                  />
+                </button>
 
-              <button
-                onClick={async () => {
-                  await logoutUser();
-                  router.push("/");
-                }}
-              >
-                Logout
-              </button>
+                {showMenu && (
+                  <div className="absolute right-0 top-14 z-50 w-52 rounded-2xl border border-gray-100 bg-white p-2 shadow-2xl">
+                    <div className="border-b p-3">
+                      <p className="font-semibold text-gray-800">
+                        {user?.name}
+                      </p>
+
+                      <p className="truncate text-sm text-gray-500">
+                        {user?.email}
+                      </p>
+                    </div>
+
+                    <Link
+                      href="/profile"
+                      onClick={() => setShowMenu(false)}
+                      className="mt-2 block rounded-xl px-4 py-3 text-gray-700 transition hover:bg-green-50"
+                    >
+                      👤 Profile
+                    </Link>
+
+                    <button
+                      onClick={async () => {
+                        await logoutUser();
+                        setShowMenu(false);
+                        router.push("/");
+                      }}
+                      className="mt-1 w-full rounded-xl px-4 py-3 text-left text-red-500 transition hover:bg-red-50"
+                    >
+                      🚪 Logout
+                    </button>
+                  </div>
+                )}
+              </div>
             </>
           )}
         </div>
@@ -167,16 +211,16 @@ export default function Navbar() {
                 My Orders
               </Link>
               <Link
-  href="/wishlist"
-  className="relative font-medium transition hover:text-green-600"
->
-  Wishlist
-  {wishlistCount > 0 && (
-    <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
-      {wishlistCount}
-    </span>
-  )}
-</Link>
+                href="/wishlist"
+                className="relative font-medium transition hover:text-green-600"
+              >
+                Wishlist
+                {wishlistCount > 0 && (
+                  <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
             </>
           )}
 

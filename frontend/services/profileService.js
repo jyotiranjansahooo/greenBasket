@@ -14,7 +14,13 @@ export async function getProfile() {
 export async function updateProfile(profileData) {
   const { data } = await api.put(
     "/auth/profile",
-    profileData
+    profileData,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
   );
 
   return data;

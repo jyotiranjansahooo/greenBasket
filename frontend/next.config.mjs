@@ -18,6 +18,10 @@ const nextConfig = {
         port: "5000",
         pathname: "/api/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
     ],
   },
 };

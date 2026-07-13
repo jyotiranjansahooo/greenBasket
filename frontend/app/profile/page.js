@@ -1,5 +1,8 @@
 "use client";
 
+import Image from "next/image";
+import { getImageUrl } from "@/lib/imageUrl";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
@@ -9,16 +12,13 @@ import { updateProfile } from "@/services/profileService";
 export default function ProfilePage() {
   const queryClient = useQueryClient();
 
-  const {
-    data: user,
-    isPending,
-    error,
-  } = useProfile();
+  const { data: user, isPending, error } = useProfile();
+  const [preview, setPreview] = useState(null);
 
   const updateMutation = useMutation({
     mutationFn: updateProfile,
 
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Profile updated successfully!");
 
       queryClient.invalidateQueries({
@@ -28,13 +28,12 @@ export default function ProfilePage() {
       queryClient.invalidateQueries({
         queryKey: ["current-user"],
       });
+
+      window.location.reload();
     },
 
     onError: (error) => {
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to update profile."
-      );
+      toast.error(error.response?.data?.message || "Failed to update profile.");
     },
   });
 
@@ -43,19 +42,23 @@ export default function ProfilePage() {
 
     const formData = new FormData(e.currentTarget);
 
-    updateMutation.mutate({
-      name: formData.get("name"),
-      phone: formData.get("phone"),
-      address: formData.get("address"),
-    });
+    const data = new FormData();
+
+    data.append("name", formData.get("name"));
+
+    data.append("phone", formData.get("phone"));
+
+    data.append("address", formData.get("address"));
+
+    data.append("profileImage", formData.get("profileImage"));
+
+    updateMutation.mutate(data);
   };
 
   if (isPending) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl font-bold">
-          Loading Profile...
-        </h1>
+        <h1 className="text-3xl font-bold">Loading Profile...</h1>
       </main>
     );
   }
@@ -63,9 +66,7 @@ export default function ProfilePage() {
   if (error) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl text-red-500">
-          Failed to load profile
-        </h1>
+        <h1 className="text-3xl text-red-500">Failed to load profile</h1>
       </main>
     );
   }
@@ -73,19 +74,69 @@ export default function ProfilePage() {
   return (
     <main className="min-h-screen text-black bg-[#F7FAF5] py-10">
       <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-lg">
+        {/* <div className="mb-8 flex flex-col items-center">
+          <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-green-200 shadow-lg">
+            <Image
+              src={
+                user?.profileImage
+                  ? user.profileImage.startsWith("http")
+                    ? user.profileImage
+                    : getImageUrl(user.profileImage)
+                  : "/default/avatar.png"
+              }
+              alt={user?.name || "Profile"}
+              fill
+              sizes="128px"
+              className="object-cover"
+            />
+          </div>
 
-        <h1 className="mb-8 text-4xl font-bold text-[#346739]">
+          <h2 className="mt-4 text-2xl font-bold text-[#346739]">
+            {user?.name}
+          </h2>
+
+          <p className="text-gray-500">{user?.role}</p>
+        </div> */}
+        <h1 className="mb-8 text-center text-4xl font-bold text-[#346739]">
           My Profile
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6"
-        >
-          <div>
-            <label className="mb-2 block font-semibold">
-              Name
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="mb-8 flex justify-center">
+            <label className="cursor-pointer">
+              <Image
+                src={
+                  preview
+                    ? preview
+                    : user?.profileImage
+                      ? user.profileImage.startsWith("http")
+                        ? user.profileImage
+                        : `${process.env.NEXT_PUBLIC_API_URL}${user.profileImage}`
+                      : "/default/avatar.png"
+                }
+                alt="Profile"
+                width={120}
+                height={120}
+                className="h-32 w-32 rounded-full object-cover shadow-lg"
+              />
+
+              <input
+                type="file"
+                name="profileImage"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+
+                  if (file) {
+                    setPreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
             </label>
+          </div>
+          <div>
+            <label className="mb-2 block font-semibold">Name</label>
 
             <input
               type="text"
@@ -96,9 +147,7 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="mb-2 block font-semibold">
-              Email
-            </label>
+            <label className="mb-2 block font-semibold">Email</label>
 
             <input
               type="email"
@@ -109,9 +158,7 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="mb-2 block font-semibold">
-              Phone
-            </label>
+            <label className="mb-2 block font-semibold">Phone</label>
 
             <input
               type="text"
@@ -122,9 +169,7 @@ export default function ProfilePage() {
           </div>
 
           <div>
-            <label className="mb-2 block font-semibold">
-              Address
-            </label>
+            <label className="mb-2 block font-semibold">Address</label>
 
             <textarea
               name="address"
@@ -139,13 +184,9 @@ export default function ProfilePage() {
             disabled={updateMutation.isPending}
             className="w-full rounded-lg bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-400"
           >
-            {updateMutation.isPending
-              ? "Saving..."
-              : "Save Changes"}
+            {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </button>
-
         </form>
-
       </div>
     </main>
   );

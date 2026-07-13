@@ -15,7 +15,7 @@ export default function CartPage() {
 
   if (isPending) {
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <main className="min-h-screen text-gray-700 bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 h-12 w-64 animate-pulse rounded-xl bg-green-100" />
 
@@ -76,7 +76,7 @@ export default function CartPage() {
 
   return (
     <PageTransition>
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <main className="min-h-screen text-gray-700 bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-6xl">
 
         <h1 className="heading-font mb-8 text-5xl text-[#346739]">

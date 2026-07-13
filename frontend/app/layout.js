@@ -6,6 +6,8 @@ import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/providers/QueryProvider";
 import OfflineHandler from "./components/common/OfflineHandler";
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 
 import { siteMetadata } from "./metadata";
 export const metadata = siteMetadata;
@@ -35,6 +37,11 @@ export default function RootLayout({ children }) {
         className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}
       >
         <QueryProvider>
+          <GoogleOAuthProvider
+    clientId={
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    }
+  >
           <AuthProvider>
              <OfflineHandler />
             <NaNvbar />
@@ -42,6 +49,7 @@ export default function RootLayout({ children }) {
             {children}
             <Footer/>
           </AuthProvider>
+          </GoogleOAuthProvider>
         </QueryProvider>
       </body>
     </html>

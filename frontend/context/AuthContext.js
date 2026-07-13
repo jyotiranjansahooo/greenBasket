@@ -13,6 +13,7 @@ import {
   register,
   logout,
   getCurrentUser,
+  googleLogin,
 } from "@/services/authService";
 import FullScreenLoader from "@/app/components/common/FullScreenLoader";
 
@@ -59,6 +60,18 @@ export function AuthProvider({ children }) {
     return loggedInUser;
   };
 
+  // Google Login
+const googleLoginUser = async (
+  credential
+) => {
+  await googleLogin(credential);
+
+  const loggedInUser =
+    await checkUser();
+
+  return loggedInUser;
+};
+
   // Register
   const registerUser = async (formData) => {
     await register(formData);
@@ -75,25 +88,25 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
- if (loading) {
-  return <FullScreenLoader />;
-}
+  if (loading) {
+    return <FullScreenLoader />;
+  }
 
-return (
-  <AuthContext.Provider
-    value={{
-      user,
-      loading,
-      loginUser,
-      registerUser,
-      logoutUser,
-      checkUser,
-    }}
-  >
-    {children}
-  </AuthContext.Provider>
-);
-  
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        loginUser,
+        googleLoginUser,
+        registerUser,
+        logoutUser,
+        checkUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

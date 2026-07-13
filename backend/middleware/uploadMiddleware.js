@@ -2,7 +2,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
-const uploadPath = "/api/uploads/products";
+const uploadPath = "uploads/products";
 
 // Create folder if it doesn't exist
 if (!fs.existsSync(uploadPath)) {
