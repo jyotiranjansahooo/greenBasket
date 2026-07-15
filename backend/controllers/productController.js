@@ -18,6 +18,13 @@ export const createProduct = async (req, res) => {
       origin,
       isFeatured,
     } = req.body;
+    if (!quantity || Number(quantity) <= 0) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Please enter a valid stock quantity.",
+  });
+}
 
     // Check farmer verification
     if (!req.user.isVerified) {
@@ -340,6 +347,49 @@ export const getFarmerProducts = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Server Error",
+    });
+  }
+};
+
+export const updateProductStock = async (
+  req,
+  res
+) => {
+  try {
+    const { amount } = req.body;
+
+    const product =
+      await Product.findById(
+        req.params.id
+      );
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Product not found",
+      });
+    }
+
+    product.quantity += amount;
+
+    if (product.quantity < 0) {
+      product.quantity = 0;
+    }
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message:
+        "Server Error",
     });
   }
 };

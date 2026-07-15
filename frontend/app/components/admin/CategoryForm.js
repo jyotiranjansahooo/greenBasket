@@ -137,7 +137,7 @@ const [preview, setPreview] = useState(null);
       setImage(file);
       setPreview(URL.createObjectURL(file));
     }}
-    className="flex h-56 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 transition hover:border-green-500 hover:bg-green-50"
+    className="flex h-56 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed bg-gray-50 transition border-green-800 "
   >
     {preview ? (
       <div className="relative h-full w-full">

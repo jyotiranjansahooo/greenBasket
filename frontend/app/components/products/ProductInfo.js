@@ -65,13 +65,10 @@ const mutation = useMutation({
         </div>
 
         <div className="flex items-center gap-2">
-          <FiCalendar />
-          Harvest:
-          {" "}
-          {new Date(
-            product.harvestDate
-          ).toLocaleDateString()}
-        </div>
+  <FiCalendar />
+  Harvest:{" "}
+  {product.harvestDate?.slice(0, 10)}
+</div>
 
       </div>
 

@@ -80,3 +80,15 @@ export async function getFeaturedProducts() {
 
   return data;
 }
+export const updateProductStock =
+  async (id, amount) => {
+    const { data } =
+      await api.patch(
+        `/farmer/products/${id}/stock`,
+        {
+          amount,
+        }
+      );
+
+    return data;
+  };

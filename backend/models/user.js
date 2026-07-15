@@ -70,6 +70,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    language: {
+  type: String,
+  enum: ["en", "hi", "or"],
+  default: "en",
+},
   },
   {
     timestamps: true,

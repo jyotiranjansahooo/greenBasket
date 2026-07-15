@@ -254,7 +254,7 @@ export default function OrdersPage() {
 
                     {/* Payment */}
 
-                    <div className="mt-8 grid gap-4 md:grid-cols-2">
+                    <div className="mt-8 grid gap-4 md:grid-cols-3">
 
                       <div className="rounded-2xl bg-gray-50 p-4">
                         <p className="font-semibold">
@@ -278,6 +278,17 @@ export default function OrdersPage() {
                           {order.paymentStatus}
                         </p>
                       </div>
+                      {order.transactionId && (
+  <div className="rounded-2xl bg-gray-50 p-4">
+    <p className="font-semibold">
+      Transaction ID
+    </p>
+
+    <p className="mt-1 font-mono text-gray-600">
+      {order.transactionId}
+    </p>
+  </div>
+)}
 
                     </div>
 

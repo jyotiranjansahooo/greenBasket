@@ -88,28 +88,35 @@ export default function ProductForm({ product = null }) {
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="
-        rounded-3xl
-        bg-white
-        p-10
-        shadow-xl
-        space-y-8
-      "
+  space-y-8
+  rounded-4xl
+  border
+  border-[#c0d6af]
+  bg-[#ccdab2]
+  p-10
+  shadow-[0_10px_30px_rgba(0,0,0,0.08)]
+"
     >
-      <div>
-        <h1 className="heading-font text-4xl text-[#346739]">
-          {product ? "Edit Product" : "Add Product"}
-        </h1>
-
-        <p className="body-font mt-2 text-gray-500">
-          {product
-            ? "Update your product information."
-            : "Fill in the product details below."}{" "}
-        </p>
-      </div>
-
       <Input
         label="Product Name"
-        placeholder="Fresh Tomato"
+        placeholder="Enter product name"
+        className="
+        font-light
+  w-full
+  rounded-2xl
+  border
+  border-[#D5DEC9]
+  bg-[#cad1b7]
+  px-5
+  py-3
+  text-[#374237]
+  placeholder:text-[#8A9582]
+  outline-none
+  transition
+  focus:border-[#4E7A46]
+  focus:ring-4
+  focus:ring-[#DCE8D3]
+"
         error={errors.name?.message}
         {...register("name")}
       />
@@ -117,11 +124,28 @@ export default function ProductForm({ product = null }) {
       <Textarea
         label="Description"
         placeholder="Write product description..."
+        className="
+        font-light
+  w-full
+  rounded-2xl
+  border
+  border-[#D5DEC9]
+  bg-[#FCFDF9]
+  px-5
+  py-3
+  text-[#374237]
+  placeholder:text-[#8A9582]
+  outline-none
+  transition
+  focus:border-[#4E7A46]
+  focus:ring-4
+  focus:ring-[#DCE8D3]
+"
         error={errors.description?.message}
         {...register("description")}
       />
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-8 md:grid-cols-2">
         <Select
           label="Category"
           error={errors.category?.message}
@@ -139,7 +163,7 @@ export default function ProductForm({ product = null }) {
         <Input
           type="number"
           label="Price"
-          placeholder="50"
+          placeholder="enter product price"
           error={errors.price?.message}
           {...register("price")}
         />
@@ -148,8 +172,8 @@ export default function ProductForm({ product = null }) {
       <div className="grid gap-6 md:grid-cols-2">
         <Input
           type="number"
-          label="Quantity"
-          placeholder="25"
+          label="Available Stock"
+          placeholder="Available stock"
           error={errors.quantity?.message}
           {...register("quantity")}
         />
@@ -203,9 +227,23 @@ export default function ProductForm({ product = null }) {
         existingImages={existingImages}
         setExistingImages={setExistingImages}
       />
-      <div className="pt-2">
-        <Button loading={isSubmitting} type="submit" className="w-full">
-          {product ? "Update Product" : "Save Product"}{" "}
+      <div className="pt-4">
+        <Button
+          loading={isSubmitting}
+          type="submit"
+          className="
+      w-full
+      rounded-2xl
+      bg-[#4E7A46]
+      py-4
+      text-base
+      font-semibold
+      text-white
+      transition
+      hover:bg-[#3F6738]
+    "
+        >
+          {product ? "Update Product" : "Save Product"}
         </Button>
       </div>
     </form>

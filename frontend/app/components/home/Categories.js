@@ -15,7 +15,7 @@ export default function Categories() {
   }
 
   return (
-    <section className="bg-[#F7FAF5] py-24">
+    <section className="bg-[#eaf4e2] py-24">
       <div className="mx-auto max-w-7xl px-6">
         <h2 className="heading-font text-center text-5xl text-[#346739]">
           Browse Categories

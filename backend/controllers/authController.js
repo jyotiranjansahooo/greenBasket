@@ -17,6 +17,7 @@ export const registerUser = async (req, res) => {
       farmLocation,
       cropTypes,
       farmingMethod,
+      language,
     } = req.body;
 
     // Check if user already exists
@@ -190,26 +191,29 @@ export const getProfile = async (req, res) => {
 // Update Profile
 export const updateProfile = async (req, res) => {
   try {
-  const {
-  name,
-  phone,
-  address,
-} = req.body;
+    const {
+      name,
+      phone,
+      address,
+      language,
+    } = req.body;
 
-const user =
-  await User.findById(
-    req.user._id
-  );
+    const user = await User.findById(
+      req.user._id
+    );
 
-user.name = name;
-user.phone = phone;
-user.address = address;
-if (req.file) {
-  user.profileImage =
-    `/uploads/profiles/${req.file.filename}`;
-}
+    user.name = name;
+    user.phone = phone;
+    user.address = address;
 
-await user.save();
+    user.language = language;
+
+    if (req.file) {
+      user.profileImage =
+        `/uploads/profiles/${req.file.filename}`;
+    }
+
+    await user.save();
 
     res.status(200).json({
       success: true,

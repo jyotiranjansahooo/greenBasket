@@ -8,6 +8,8 @@ import { FaShoppingBasket, FaBars, FaTimes } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
 import useWishlist from "@/app/hooks/useWishlist";
 
+import { FiUser, FiLogOut } from "react-icons/fi";
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -42,9 +44,11 @@ export default function Navbar() {
           <Link href="/" className="nav-link">
             Home
           </Link>
-          <Link href="/about" className="nav-link">
-            About
-          </Link>
+          {user?.role !== "farmer" && (
+            <Link href="/about" className="nav-link">
+              About
+            </Link>
+          )}
 
           {!user ? (
             <>
@@ -87,8 +91,27 @@ export default function Navbar() {
                 </>
               )}
 
-              {user.role === "farmer" && (
-                <Link href="/farmer/dashboard">Dashboard</Link>
+              {user?.role === "farmer" && (
+                <>
+                  <Link href="/farmer/dashboard" className="nav-link">
+                    Dashboard
+                  </Link>
+
+                  {user.isVerified && (
+                    <>
+                      <Link href="/farmer/products/add" className="nav-link">
+                        Add Product
+                      </Link>
+
+                      <Link href="/farmer/products" className="nav-link">
+                        Manage Products
+                      </Link>
+                      <Link href="/farmer/help" className="nav-link">
+                        Help
+                      </Link>
+                    </>
+                  )}
+                </>
               )}
 
               {user.role === "admin" && (
@@ -157,9 +180,10 @@ export default function Navbar() {
                     <Link
                       href="/profile"
                       onClick={() => setShowMenu(false)}
-                      className="mt-2 block rounded-xl px-4 py-3 text-gray-700 transition hover:bg-green-50"
+                      className="mt-2 flex items-center gap-3 rounded-xl px-4 py-3 text-gray-700 transition hover:bg-green-50"
                     >
-                      👤 Profile
+                      <FiUser />
+                      Profile
                     </Link>
 
                     <button
@@ -168,9 +192,10 @@ export default function Navbar() {
                         setShowMenu(false);
                         router.push("/");
                       }}
-                      className="mt-1 w-full rounded-xl px-4 py-3 text-left text-red-500 transition hover:bg-red-50"
+                      className="mt-1 flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-red-500 transition hover:bg-red-50"
                     >
-                      🚪 Logout
+                      <FiLogOut />
+                      Logout
                     </button>
                   </div>
                 )}
@@ -236,7 +261,7 @@ export default function Navbar() {
           )}
 
           <Link href="/profile" className="block">
-            Profile
+            <FiUser /> Profile
           </Link>
 
           <button
@@ -246,6 +271,7 @@ export default function Navbar() {
             }}
             className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
           >
+            <FiLogOut />
             Logout
           </button>
         </div>

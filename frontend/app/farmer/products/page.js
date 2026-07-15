@@ -37,9 +37,9 @@ export default function FarmerProductsPage() {
 
   if (error) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F7FAF5]">
-        <div className="rounded-2xl bg-white p-8 shadow-lg text-center">
-          <h2 className="text-2xl font-bold text-red-500">
+      <main className="flex min-h-screen items-center justify-center bg-[#68ad3a]">
+        <div className="rounded-2xl bg-green-400 p-8 shadow-lg text-center">
+          <h2 className="text-2xl  font-bold text-red-500">
             Failed to load products
           </h2>
 
@@ -50,7 +50,7 @@ export default function FarmerProductsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <main className="min-h-screen bg-[#43552c] p-10">
       <div className="mb-10 flex items-center justify-between">
         <h1 className="heading-font text-5xl text-[#346739]">My Products</h1>
 
@@ -63,7 +63,7 @@ export default function FarmerProductsPage() {
       </div>
 
       {products.length === 0 ? (
-        <div className="rounded-3xl bg-white p-16 text-center shadow">
+        <div className="rounded-3xl bg-[#E3CBA4] p-16 text-center shadow">
           <h2 className="text-3xl font-bold">No Products Yet 🌱</h2>
 
           <p className="mt-4 text-gray-500">
@@ -77,6 +77,7 @@ export default function FarmerProductsPage() {
               key={product._id}
               product={product}
               onDelete={handleDelete}
+              
             />
           ))}
         </div>

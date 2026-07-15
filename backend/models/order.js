@@ -22,7 +22,7 @@ const orderItemSchema = new mongoose.Schema(
   },
   {
     _id: false,
-  }
+  },
 );
 
 const orderSchema = new mongoose.Schema(
@@ -57,6 +57,22 @@ const orderSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    paymentMethod: {
+      type: String,
+      enum: ["COD", "ONLINE"],
+      default: "COD",
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["Pending", "Paid", "Failed"],
+      default: "Pending",
+    },
+
+    transactionId: {
+      type: String,
+      default: null,
+    },
 
     status: {
       type: String,
@@ -70,22 +86,10 @@ const orderSchema = new mongoose.Schema(
       ],
       default: "Pending",
     },
-
-    paymentMethod: {
-  type: String,
-  enum: ["COD", "ONLINE"],
-  default: "COD",
-},
-
-paymentStatus: {
-  type: String,
-  enum: ["Pending", "Paid"],
-  default: "Pending",
-},
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 const Order = mongoose.model("Order", orderSchema);

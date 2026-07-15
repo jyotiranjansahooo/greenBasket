@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Hero() {
   const { user } = useAuth();
   return (
-    <section className="relative overflow-hidden bg-[#F7FAF5]">
+    <section className="relative overflow-hidden bg-[#eaf4e2]">
       <HeroBackground />
       <div className="absolute left-0 top-20 h-72 w-72 rounded-full bg-[#9FCB98]/30 blur-3xl"></div>
       <div className="absolute right-0 bottom-10 h-96 w-96 rounded-full bg-[#79AE6F]/20 blur-3xl"></div>{" "}

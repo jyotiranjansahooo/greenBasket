@@ -30,11 +30,9 @@ export const getAllFarmers = async (req, res) => {
 // Verify / unverify farmer
 export const verifyFarmer = async (req, res) => {
   try {
-    console.log("Farmer ID:", req.params.id);
 
     const farmer = await User.findById(req.params.id);
 
-    console.log("Farmer:", farmer);
 
     if (!farmer) {
       return res.status(404).json({
