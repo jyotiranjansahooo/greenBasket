@@ -21,7 +21,7 @@ export default function Navbar() {
   const wishlistCount = wishlistData?.wishlist?.products?.length || 0;
 
   return (
-    <nav className="animate-fadeDown sticky top-0 z-50 border-green-100 bg-[#8BA888] backdrop-blur-lg">
+    <nav className="animate-fadeDown sticky top-0 z-50 border-green-100 bg-[#71ac7d] backdrop-blur-lg">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link
@@ -54,7 +54,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="relative font-medium  transition duration-300 hover:text-green-600 after:absolute after:bottom-1.5 after:left-0 after:h-0.5 after:w-0 after:bg-green-600 after:transition-all after:duration-300 hover:after:w-full"
+                className="nav-link"
               >
                 Login
               </Link>

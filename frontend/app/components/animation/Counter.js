@@ -1,36 +1,37 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Counter({
-  end,
+  end = 0,
   suffix = "",
   duration = 1500,
 }) {
-  const [count, setCount] = useState(0);
-  const started = useRef(false);
+  const [count, setCount] =
+    useState(0);
 
   useEffect(() => {
-    if (started.current) return;
+    let current = 0;
 
-    started.current = true;
-
-    let start = 0;
-
-    const increment = end / (duration / 16);
+    const increment =
+      end / (duration / 16);
 
     const timer = setInterval(() => {
-      start += increment;
+      current += increment;
 
-      if (start >= end) {
+      if (current >= end) {
         setCount(end);
+
         clearInterval(timer);
       } else {
-        setCount(Math.floor(start));
+        setCount(
+          Math.floor(current)
+        );
       }
     }, 16);
 
-    return () => clearInterval(timer);
+    return () =>
+      clearInterval(timer);
   }, [end, duration]);
 
   return (

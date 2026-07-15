@@ -72,31 +72,8 @@ export default function ProfilePage() {
   }
 
   return (
-    <main className="min-h-screen text-black bg-[#F7FAF5] py-10">
-      <div className="mx-auto max-w-2xl rounded-2xl bg-white p-8 shadow-lg">
-        {/* <div className="mb-8 flex flex-col items-center">
-          <div className="relative h-32 w-32 overflow-hidden rounded-full border-4 border-green-200 shadow-lg">
-            <Image
-              src={
-                user?.profileImage
-                  ? user.profileImage.startsWith("http")
-                    ? user.profileImage
-                    : getImageUrl(user.profileImage)
-                  : "/default/avatar.png"
-              }
-              alt={user?.name || "Profile"}
-              fill
-              sizes="128px"
-              className="object-cover"
-            />
-          </div>
-
-          <h2 className="mt-4 text-2xl font-bold text-[#346739]">
-            {user?.name}
-          </h2>
-
-          <p className="text-gray-500">{user?.role}</p>
-        </div> */}
+    <main className="min-h-screen text-black bg-[#81A281] py-10">
+      <div className="mx-auto max-w-2xl rounded-2xl bg-[#d2e4d2] p-8 shadow-lg">
         <h1 className="mb-8 text-center text-4xl font-bold text-[#346739]">
           My Profile
         </h1>
@@ -153,7 +130,7 @@ export default function ProfilePage() {
               type="email"
               defaultValue={user?.email}
               disabled
-              className="w-full rounded-lg border bg-gray-100 p-3"
+              className="w-full rounded-lg border  p-3"
             />
           </div>
 

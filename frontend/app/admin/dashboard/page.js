@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-10">
+    <main className="min-h-screen bg-[#d5d6bb] p-10">
       <div className="mx-auto max-w-7xl">
 
         <h1 className="mb-10 text-5xl font-bold text-[#346739]">

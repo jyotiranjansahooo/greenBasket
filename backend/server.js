@@ -5,6 +5,7 @@ import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import path from "path";
 import farmerRoutes from "./routes/farmerRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -15,7 +16,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
-
+import publicRoutes from "./routes/publicRoutes.js";
 
 dotenv.config();
 await connectDB();
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use("/api/uploads", express.static("uploads"));
 
+app.use("/api/public", publicRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
@@ -43,8 +45,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/farmer", farmerRoutes);
 app.use("/api/wishlist", wishlistRoutes);
-
-
+app.use("/api/payment", paymentRoutes);
 
 // Server
 const PORT = process.env.PORT || 5000;

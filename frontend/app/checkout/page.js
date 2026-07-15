@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { createPaymentOrder } from "@/services/paymentService";
 
 import useCart from "@/app/hooks/useCart";
 import { useAuth } from "@/context/AuthContext";
@@ -79,10 +80,69 @@ router.push(
 
     // Demo online payment
     if (paymentMethod === "ONLINE") {
-      const confirmed = window.confirm(`Pay ₹${total} online?`);
+  try {
+    const payment =
+      await createPaymentOrder(
+        total
+      );
 
-      if (!confirmed) return;
-    }
+    const options = {
+      key: process.env
+        .NEXT_PUBLIC_RAZORPAY_KEY,
+
+      amount:
+        payment.order.amount,
+
+      currency:
+        payment.order.currency,
+
+      name: "Green Basket",
+
+      description:
+        "Fresh Farm Products",
+
+      order_id:
+        payment.order.id,
+
+      handler: function (
+        response
+      ) {
+        orderMutation.mutate(
+          orderData
+        );
+      },
+
+      prefill: {
+        name: user?.name,
+
+        email: user?.email,
+
+        contact:
+          user?.phone,
+      },
+
+      theme: {
+        color:
+          "#346739",
+      },
+    };
+
+    const razorpay =
+      new window.Razorpay(
+        options
+      );
+
+    razorpay.open();
+
+    return;
+  } catch (error) {
+    toast.error(
+      "Failed to open payment gateway."
+    );
+
+    return;
+  }
+}
 
     orderMutation.mutate(orderData);
   };

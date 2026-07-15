@@ -76,7 +76,7 @@ export default function CartPage() {
 
   return (
     <PageTransition>
-    <main className="min-h-screen text-gray-700 bg-[#F7FAF5] p-10">
+    <main className="min-h-screen text-gray-700 bg-[#c5c0a9] p-10">
       <div className="mx-auto max-w-6xl">
 
         <h1 className="heading-font mb-8 text-5xl text-[#346739]">

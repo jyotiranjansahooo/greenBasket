@@ -165,7 +165,7 @@ export default function FarmerHelpPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F7FAF5] p-8 text-gray-800">
+    <main className="min-h-screen bg-[#abbe9f] p-8 text-gray-800">
       <div className="mx-auto max-w-5xl">
         <h1 className="mb-3 text-5xl font-bold text-[#346739]">
           Farmer Help Center 🌾
@@ -180,7 +180,7 @@ export default function FarmerHelpPage() {
           {helpSections.map((section, sectionIndex) => (
             <div
               key={section.title}
-              className="rounded-3xl bg-white p-6 shadow"
+              className="rounded-3xl bg-[#d5e3d5] p-6 shadow"
             >
               <h2 className="mb-5 flex items-center gap-3 text-2xl font-bold text-[#346739]">
                 <span className="text-3xl">{section.icon}</span>

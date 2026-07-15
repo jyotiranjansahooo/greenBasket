@@ -50,9 +50,9 @@ export default function FarmerProductsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#43552c] p-10">
+    <main className="min-h-screen bg-[#81A281] p-10">
       <div className="mb-10 flex items-center justify-between">
-        <h1 className="heading-font text-5xl text-[#346739]">My Products</h1>
+        <h1 className="heading-font text-5xl text-[#09460f]">My Products</h1>
 
         <Link
           href="/farmer/products/add"

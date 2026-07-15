@@ -7,7 +7,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/providers/QueryProvider";
 import OfflineHandler from "./components/common/OfflineHandler";
 import { GoogleOAuthProvider } from "@react-oauth/google";
-
+import Script from "next/script";
 
 import { siteMetadata } from "./metadata";
 export const metadata = siteMetadata;
@@ -38,19 +38,18 @@ export default function RootLayout({ children }) {
       >
         <QueryProvider>
           <GoogleOAuthProvider
-    clientId={
-      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    }
-  >
-          <AuthProvider>
-             <OfflineHandler />
-            <NaNvbar />
-            <Toaster position="top-right" />
-            {children}
-            <Footer/>
-          </AuthProvider>
+            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+          >
+            <AuthProvider>
+              <OfflineHandler />
+              <NaNvbar />
+              <Toaster position="top-right" />
+              {children}
+              <Footer />
+            </AuthProvider>
           </GoogleOAuthProvider>
         </QueryProvider>
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />c
       </body>
     </html>
   );
