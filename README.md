@@ -148,7 +148,7 @@ greenBasket/
 ## Clone the repository
 
 ```bash
-git clone https://github.com/your-username/greenBasket.git
+git clone https://github.com/jyotiranjansahooo/greenBasket.git
 
 cd greenBasket
 ```
@@ -331,9 +331,9 @@ This project is licensed under the MIT License.
 
 Developed by Jyoti ranjan sahoo
 
-GitHub: https://github.com/your-username
+GitHub: https://github.com/jyotiranjansahooo
 
-LinkedIn: https://linkedin.com/in/your-profile
+LinkedIn: https://www.linkedin.com/in/jyoti-ranjan-sahoo-80bb6a36a?utm_source=share_via&utm_content=profile&utm_medium=member_android
 
 ---
 
