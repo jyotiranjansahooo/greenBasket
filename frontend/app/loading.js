@@ -122,7 +122,7 @@ export default function Loading() {
   }, []);
 
   return (
-    <main className="fixed inset-0 overflow-hidden bg-gradient-to-br from-[#F7FAF5] via-[#D9F0D1] to-[#A8D5A2]">
+    <main className="fixed inset-0 overflow-hidden bg-linear-to-br from-[#F7FAF5] via-[#D9F0D1] to-[#A8D5A2]">
       <div className="absolute -left-20 top-20 h-80 w-80 rounded-full bg-green-300/30 blur-3xl" />
 
       <div className="absolute bottom-10 right-10 h-96 w-96 rounded-full bg-lime-300/30 blur-3xl" />

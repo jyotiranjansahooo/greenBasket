@@ -131,3 +131,46 @@ body {
 .nav-link:hover::after {
   width: 100%;
 }
+
+@keyframes tractorMove {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(calc(100vw + 300px));
+  }
+}
+
+.tractor-1 {
+  animation: tractorMove 9s linear infinite;
+}
+
+.tractor-2 {
+  animation: tractorMove 10s linear infinite;
+}
+.tractor-3 {
+  animation: tractorMove 12s linear infinite;
+}
+
+@keyframes cloudMove {
+  0% {
+    transform: translateX(0);
+  }
+
+  50% {
+    transform: translateX(20px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.cloud-1 {
+  animation: cloudMove 7s ease-in-out infinite;
+}
+
+.cloud-2 {
+  animation: cloudMove 10s ease-in-out infinite;
+}

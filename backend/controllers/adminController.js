@@ -3,8 +3,6 @@ import Product from "../models/Product.js";
 import Order from "../models/Order.js";
 import Category from "../models/category.js";
 
-
-
 // Get all farmers
 export const getAllFarmers = async (req, res) => {
   try {
@@ -30,9 +28,7 @@ export const getAllFarmers = async (req, res) => {
 // Verify / unverify farmer
 export const verifyFarmer = async (req, res) => {
   try {
-
     const farmer = await User.findById(req.params.id);
-
 
     if (!farmer) {
       return res.status(404).json({
@@ -69,7 +65,6 @@ export const verifyFarmer = async (req, res) => {
   }
 };
 
-
 export const getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -92,7 +87,6 @@ export const getAllOrders = async (req, res) => {
   }
 };
 
-
 export const getPlatformAnalytics = async (req, res) => {
   try {
     const totalCustomers = await User.countDocuments({
@@ -114,6 +108,41 @@ export const getPlatformAnalytics = async (req, res) => {
 
     const totalOrders = await Order.countDocuments();
 
+    // Delivered orders
+    const deliveredOrders = await Order.countDocuments({
+      status: "Delivered",
+    });
+
+    // Order fulfilment rate
+    const fulfilmentRate =
+      totalOrders > 0 ? Math.round((deliveredOrders / totalOrders) * 100) : 0;
+
+    // Repeat customers
+    const repeatCustomers = await Order.aggregate([
+      {
+        $group: {
+          _id: "$customer",
+          orderCount: {
+            $sum: 1,
+          },
+        },
+      },
+
+      {
+        $match: {
+          orderCount: {
+            $gte: 2,
+          },
+        },
+      },
+    ]);
+
+    // Repeat customer rate
+    const repeatCustomerRate =
+      totalCustomers > 0
+        ? Math.round((repeatCustomers.length / totalCustomers) * 100)
+        : 0;
+
     const revenue = await Order.aggregate([
       {
         $match: {
@@ -133,15 +162,17 @@ export const getPlatformAnalytics = async (req, res) => {
     res.status(200).json({
       success: true,
       analytics: {
-        totalCustomers,
-        totalFarmers,
-        verifiedFarmers,
-        totalProducts,
-        totalCategories,
-        totalOrders,
-        totalRevenue: revenue.length
-          ? revenue[0].totalRevenue
-          : 0,
+         totalCustomers,
+  totalFarmers,
+  verifiedFarmers,
+  totalProducts,
+  totalCategories,
+  totalOrders,
+
+  deliveredOrders,
+  fulfilmentRate,
+  repeatCustomerRate,
+        totalRevenue: revenue.length ? revenue[0].totalRevenue : 0,
       },
     });
   } catch (error) {
@@ -178,9 +209,7 @@ export const getAllProducts = async (req, res) => {
 
 export const toggleFeaturedProduct = async (req, res) => {
   try {
-    const product = await Product.findById(
-      req.params.id
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
@@ -189,8 +218,7 @@ export const toggleFeaturedProduct = async (req, res) => {
       });
     }
 
-    product.isFeatured =
-      !product.isFeatured;
+    product.isFeatured = !product.isFeatured;
 
     await product.save();
 

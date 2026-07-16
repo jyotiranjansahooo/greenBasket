@@ -44,7 +44,7 @@ export default function Navbar() {
           <Link href="/" className="nav-link">
             Home
           </Link>
-          {user?.role !== "farmer" && (
+          {(!user || user.role === "customer") && (
             <Link href="/about" className="nav-link">
               About
             </Link>
@@ -52,10 +52,7 @@ export default function Navbar() {
 
           {!user ? (
             <>
-              <Link
-                href="/login"
-                className="nav-link"
-              >
+              <Link href="/login" className="nav-link">
                 Login
               </Link>
 
@@ -116,12 +113,13 @@ export default function Navbar() {
 
               {user.role === "admin" && (
                 <>
-                  <Link
-                    href="/admin/products"
-                    className="relative font-medium  transition hover:text-green-600"
-                  >
-                    Products
-                  </Link>
+                  {/* <Link
+      href="/admin/products"
+      className="relative font-medium  transition hover:text-green-600"
+    >
+      Products
+    </Link> */}
+
                   <Link
                     href="/admin/dashboard"
                     className="relative font-medium  transition hover:text-green-600"
@@ -141,6 +139,9 @@ export default function Navbar() {
                     className="relative font-medium  transition hover:text-green-600"
                   >
                     Categories
+                  </Link>
+                  <Link href="/admin/orders" className="nav-link">
+                    Orders
                   </Link>
                 </>
               )}
@@ -220,9 +221,11 @@ export default function Navbar() {
             Home
           </Link>
 
-          <Link href="/products" className="block">
-            Products
-          </Link>
+          {(!user || user.role === "customer") && (
+            <Link href="/products" className="block">
+              Products
+            </Link>
+          )}
 
           {user?.role === "customer" && (
             <>
@@ -247,21 +250,55 @@ export default function Navbar() {
             </>
           )}
 
-          {(user?.role === "farmer" || user?.role === "admin") && (
-            <Link
-              href={
-                user.role === "farmer"
-                  ? "/farmer/dashboard"
-                  : "/admin/dashboard"
-              }
-              className="block"
-            >
-              Dashboard
-            </Link>
+          {user?.role === "farmer" && (
+            <>
+              <Link href="/farmer/dashboard" className="block">
+                Dashboard
+              </Link>
+
+              <Link href="/farmer/products" className="block">
+                Manage Products
+              </Link>
+            </>
           )}
 
-          <Link href="/profile" className="block">
-            <FiUser /> Profile
+          {user?.role === "admin" && (
+            <>
+              <Link href="/admin/dashboard" className="block">
+                Dashboard
+              </Link>
+
+              <Link href="/admin/farmers" className="block">
+                Farmers
+              </Link>
+
+              <Link href="/admin/categories" className="block">
+                Categories
+              </Link>
+
+              <Link href="/admin/orders" className="block">
+                Orders
+              </Link>
+            </>
+          )}
+
+          <Link
+            href="/profile"
+            className="
+            bg-[#71AC7D]
+            text-white
+    flex
+    items-center
+    gap-2
+    rounded-lg
+    px-4
+    py-2
+    transition
+    hover:bg-green-100
+  "
+          >
+            <FiUser className="text-lg" />
+            <span>Profile</span>
           </Link>
 
           <button
@@ -269,10 +306,22 @@ export default function Navbar() {
               await logoutUser();
               router.push("/");
             }}
-            className="rounded-lg bg-red-500 px-5 py-2 text-white transition hover:bg-red-600"
+            className="
+    flex
+    w-full
+    items-center
+    gap-2
+    rounded-lg
+    bg-red-500
+    px-4
+    py-2
+    text-white
+    transition
+    hover:bg-red-600
+  "
           >
-            <FiLogOut />
-            Logout
+            <FiLogOut className="text-lg" />
+            <span>Logout</span>
           </button>
         </div>
       )}
