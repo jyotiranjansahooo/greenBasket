@@ -1,4 +1,4 @@
-import Review from "../models/eview.js";
+import Review from "../models/review.js";
 import Product from "../models/product.js";
 import Order from "../models/order.js";
 
