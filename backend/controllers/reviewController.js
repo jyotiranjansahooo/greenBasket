@@ -1,6 +1,6 @@
-import Review from "../models/Review.js";
-import Product from "../models/Product.js";
-import Order from "../models/Order.js";
+import Review from "../models/eview.js";
+import Product from "../models/product.js";
+import Order from "../models/order.js";
 
 const updateProductRating = async (productId) => {
   const reviews = await Review.find({
