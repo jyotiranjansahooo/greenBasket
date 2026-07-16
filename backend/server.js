@@ -24,12 +24,24 @@ await connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3001",
+  "https://green-basket-sandy.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "http://localhost:3001",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked"));
+      }
+    },
     credentials: true,
   }),
 );
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/uploads", express.static("uploads"));
