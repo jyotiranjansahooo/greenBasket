@@ -5,7 +5,6 @@ export const getHeroStats = async () => {
     "/public/hero-stats"
   );
 
-  console.log("publicservice data",response.data);
 
   return response.data.stats;
 };

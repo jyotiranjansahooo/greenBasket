@@ -11,7 +11,6 @@ export default function HeroStats() {
     queryKey: ["hero-stats"],
     queryFn: getHeroStats,
   });
-  console.log("herostats data", data);
 
   if (isPending) {
     return null;
