@@ -27,19 +27,24 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3001",
   "https://green-basket-sandy.vercel.app",
+  "https://greenbasket-market.vercel.app",
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+    origin(origin, callback) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
         callback(null, true);
       } else {
         callback(new Error("CORS blocked"));
       }
     },
     credentials: true,
-  }),
+  })
 );
 
 app.use(express.json());

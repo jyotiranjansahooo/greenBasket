@@ -45,9 +45,9 @@ export const createProduct = async (req, res) => {
     }
 
     // Images uploaded by Multer
-  const imagePaths = req.files
+ const imagePaths = req.files
   ? req.files.map(
-      (file) => `/api/uploads/products/${file.filename}`
+      (file) => file.path
     )
   : [];
 
