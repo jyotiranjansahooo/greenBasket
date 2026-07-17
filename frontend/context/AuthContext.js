@@ -15,33 +15,43 @@ import {
   getCurrentUser,
   googleLogin,
 } from "@/services/authService";
+
 import FullScreenLoader from "@/app/components/common/FullScreenLoader";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
 
-  const checkUser = useCallback(async () => {
-    try {
-      const data = await getCurrentUser();
+  const [loading, setLoading] =
+    useState(true);
 
-      setUser(data.user);
+  const checkUser = useCallback(
+    async () => {
+      try {
+        const data =
+          await getCurrentUser();
 
-      return data.user;
-    } catch (error) {
-      // Ignore 401 - it just means no one is logged in.
-      if (error.response?.status !== 401) {
-        console.error(error);
+        setUser(data.user);
+
+        return data.user;
+      } catch (error) {
+        if (
+          error.response?.status !==
+          401
+        ) {
+          console.error(error);
+        }
+
+        setUser(null);
+
+        return null;
+      } finally {
+        setLoading(false);
       }
-
-      setUser(null);
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     async function init() {
@@ -52,31 +62,55 @@ export function AuthProvider({ children }) {
   }, [checkUser]);
 
   // Login
-  const loginUser = async (email, password) => {
+  const loginUser = async (
+    email,
+    password
+  ) => {
     await login(email, password);
 
-    const loggedInUser = await checkUser();
+    // Wait for cookie to persist
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500)
+    );
+
+    const loggedInUser =
+      await checkUser();
 
     return loggedInUser;
   };
 
   // Google Login
-const googleLoginUser = async (
-  credential
-) => {
-  await googleLogin(credential);
+  const googleLoginUser = async (
+    credential
+  ) => {
+    await googleLogin(
+      credential
+    );
 
-  const loggedInUser =
-    await checkUser();
+    // Wait for cookie to persist
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500)
+    );
 
-  return loggedInUser;
-};
+    const loggedInUser =
+      await checkUser();
+
+    return loggedInUser;
+  };
 
   // Register
-  const registerUser = async (formData) => {
+  const registerUser = async (
+    formData
+  ) => {
     await register(formData);
 
-    const newUser = await checkUser();
+    // Wait for cookie to persist
+    await new Promise((resolve) =>
+      setTimeout(resolve, 500)
+    );
+
+    const newUser =
+      await checkUser();
 
     return newUser;
   };

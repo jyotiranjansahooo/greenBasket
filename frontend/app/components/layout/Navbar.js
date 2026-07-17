@@ -113,13 +113,6 @@ export default function Navbar() {
 
               {user.role === "admin" && (
                 <>
-                  {/* <Link
-      href="/admin/products"
-      className="relative font-medium  transition hover:text-green-600"
-    >
-      Products
-    </Link> */}
-
                   <Link
                     href="/admin/dashboard"
                     className="relative font-medium  transition hover:text-green-600"
@@ -215,116 +208,185 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu */}
-      {menuOpen && (
-        <div className="space-y-4 text-gray-700 bg-white px-6 py-5 shadow-md md:hidden">
-          <Link href="/" className="block">
-            Home
-          </Link>
+     {menuOpen && (
+  <div className="space-y-4 bg-white px-6 py-5 text-gray-700 shadow-md md:hidden">
+    <Link href="/" className="block">
+      Home
+    </Link>
 
-          {(!user || user.role === "customer") && (
-            <Link href="/products" className="block">
-              Products
-            </Link>
+    {(!user || user.role === "customer") && (
+      <Link href="/products" className="block">
+        Products
+      </Link>
+    )}
+
+    {/* Guest menu */}
+    {!user && (
+      <>
+        <Link href="/login" className="block">
+          Login
+        </Link>
+
+        <Link href="/register" className="block">
+          Register
+        </Link>
+      </>
+    )}
+
+    {/* Customer menu */}
+    {user?.role === "customer" && (
+      <>
+        <Link href="/cart" className="block">
+          Cart
+        </Link>
+
+        <Link href="/orders" className="block">
+          My Orders
+        </Link>
+
+        <Link
+          href="/wishlist"
+          className="relative block"
+        >
+          Wishlist
+
+          {wishlistCount > 0 && (
+            <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
+              {wishlistCount}
+            </span>
           )}
+        </Link>
+      </>
+    )}
 
-          {user?.role === "customer" && (
-            <>
-              <Link href="/cart" className="block">
-                Cart
-              </Link>
+    {/* Farmer menu */}
+    {user?.role === "farmer" && (
+      <>
+        <Link
+          href="/farmer/dashboard"
+          className="block"
+        >
+          Dashboard
+        </Link>
 
-              <Link href="/orders" className="block">
-                My Orders
-              </Link>
-              <Link
-                href="/wishlist"
-                className="relative font-medium transition hover:text-green-600"
-              >
-                Wishlist
-                {wishlistCount > 0 && (
-                  <span className="ml-1 rounded-full bg-red-500 px-2 py-0.5 text-xs text-white">
-                    {wishlistCount}
-                  </span>
-                )}
-              </Link>
-            </>
-          )}
+        <Link
+          href="/farmer/products"
+          className="block"
+        >
+          My Products
+        </Link>
 
-          {user?.role === "farmer" && (
-            <>
-              <Link href="/farmer/dashboard" className="block">
-                Dashboard
-              </Link>
+        <Link
+          href="/farmer/products/new"
+          className="block"
+        >
+          Add Product
+        </Link>
 
-              <Link href="/farmer/products" className="block">
-                Manage Products
-              </Link>
-            </>
-          )}
+        <Link
+          href="/farmer/orders"
+          className="block"
+        >
+          Orders
+        </Link>
+      </>
+    )}
 
-          {user?.role === "admin" && (
-            <>
-              <Link href="/admin/dashboard" className="block">
-                Dashboard
-              </Link>
+    {/* Admin menu */}
+    {user?.role === "admin" && (
+      <>
+        <Link
+          href="/admin/dashboard"
+          className="block"
+        >
+          Dashboard
+        </Link>
 
-              <Link href="/admin/farmers" className="block">
-                Farmers
-              </Link>
+        <Link
+          href="/admin/farmers"
+          className="block"
+        >
+          Farmers
+        </Link>
 
-              <Link href="/admin/categories" className="block">
-                Categories
-              </Link>
+        <Link
+          href="/admin/categories"
+          className="block"
+        >
+          Categories
+        </Link>
 
-              <Link href="/admin/orders" className="block">
-                Orders
-              </Link>
-            </>
-          )}
+        <Link
+          href="/admin/orders"
+          className="block"
+        >
+          Orders
+        </Link>
 
-          <Link
-            href="/profile"
-            className="
+        <Link
+          href="/admin/products"
+          className="block"
+        >
+          Products
+        </Link>
+
+        <Link
+          href="/admin/users"
+          className="block"
+        >
+          Users
+        </Link>
+      </>
+    )}
+
+    {/* Show only when logged in */}
+    {user && (
+      <>
+        <Link
+          href="/profile"
+          className="
+            flex
+            items-center
+            gap-2
+            rounded-lg
             bg-[#71AC7D]
+            px-4
+            py-2
             text-white
-    flex
-    items-center
-    gap-2
-    rounded-lg
-    px-4
-    py-2
-    transition
-    hover:bg-green-100
-  "
-          >
-            <FiUser className="text-lg" />
-            <span>Profile</span>
-          </Link>
+            transition
+            hover:bg-green-600
+          "
+        >
+          <FiUser className="text-lg" />
+          <span>Profile</span>
+        </Link>
 
-          <button
-            onClick={async () => {
-              await logoutUser();
-              router.push("/");
-            }}
-            className="
-    flex
-    w-full
-    items-center
-    gap-2
-    rounded-lg
-    bg-red-500
-    px-4
-    py-2
-    text-white
-    transition
-    hover:bg-red-600
-  "
-          >
-            <FiLogOut className="text-lg" />
-            <span>Logout</span>
-          </button>
-        </div>
-      )}
+        <button
+          onClick={async () => {
+            await logoutUser();
+            router.push("/");
+          }}
+          className="
+            flex
+            w-full
+            items-center
+            gap-2
+            rounded-lg
+            bg-red-500
+            px-4
+            py-2
+            text-white
+            transition
+            hover:bg-red-600
+          "
+        >
+          <FiLogOut className="text-lg" />
+          <span>Logout</span>
+        </button>
+      </>
+    )}
+  </div>
+)}
     </nav>
   );
 }

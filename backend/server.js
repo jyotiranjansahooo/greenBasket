@@ -26,7 +26,6 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   "http://localhost:3001",
-  "https://green-basket-sandy.vercel.app",
   "https://greenbasket-market.vercel.app",
 ];
 
