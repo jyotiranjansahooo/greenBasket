@@ -4,8 +4,18 @@ import User from "../models/user.js";
 // Protect Routes
 export const protect = async (req, res, next) => {
   try {
-    // Get token from cookies
+    console.log("=== AUTH DEBUG ===");
+
+    console.log("Cookies:", req.cookies);
+
     const token = req.cookies.token;
+
+    console.log("TOKEN:", token);
+
+    console.log(
+      "JWT_SECRET exists:",
+      !!process.env.JWT_SECRET
+    );
 
     if (!token) {
       return res.status(401).json({
@@ -14,11 +24,18 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET
+    );
 
-    // Find user
-    const user = await User.findById(decoded.id).select("-password");
+    console.log("DECODED:", decoded);
+
+    const user = await User.findById(
+      decoded.id
+    ).select("-password");
+
+    console.log("USER:", user?._id);
 
     if (!user) {
       return res.status(401).json({
@@ -31,7 +48,10 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error(error);
+    console.error(
+      "AUTH ERROR:",
+      error.message
+    );
 
     return res.status(401).json({
       success: false,

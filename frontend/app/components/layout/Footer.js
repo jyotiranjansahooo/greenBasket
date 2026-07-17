@@ -192,12 +192,6 @@ export default function Footer() {
                 About
               </Link>
 
-              <Link
-                href="/contact"
-                className="block transition hover:translate-x-2 hover:text-white"
-              >
-                Contact
-              </Link>
             </div>
           </div>
 
@@ -217,20 +211,7 @@ export default function Footer() {
                 className="w-full rounded-2xl border border-white/20 bg-white/10 px-5 py-4 text-white placeholder:text-white/50 backdrop-blur-xl outline-none"
               />
 
-              <button
-                className="
-                  w-full
-                  rounded-2xl
-                  bg-white
-                  py-4
-                  font-semibold
-                  text-[#346739]
-                  transition
-                  hover:scale-105
-                "
-              >
-                Subscribe
-              </button>
+             
             </div>
 
             <div className="mt-8 flex gap-4">
