@@ -68,7 +68,6 @@ export function AuthProvider({ children }) {
   ) => {
     await login(email, password);
 
-    // Wait for cookie to persist
     await new Promise((resolve) =>
       setTimeout(resolve, 500)
     );
@@ -87,7 +86,6 @@ export function AuthProvider({ children }) {
       credential
     );
 
-    // Wait for cookie to persist
     await new Promise((resolve) =>
       setTimeout(resolve, 500)
     );
@@ -104,7 +102,6 @@ export function AuthProvider({ children }) {
   ) => {
     await register(formData);
 
-    // Wait for cookie to persist
     await new Promise((resolve) =>
       setTimeout(resolve, 500)
     );
@@ -116,7 +113,11 @@ export function AuthProvider({ children }) {
   };
 
   // Logout
-  a
+  const logoutUser = async () => {
+    await logout();
+
+    setUser(null);
+  };
 
   if (loading) {
     return <FullScreenLoader />;
