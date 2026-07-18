@@ -1,9 +1,8 @@
 import bcrypt from "bcrypt";
 import User from "../models/user.js";
-import generateToken from "../utils/generateToken.js";
 import { OAuth2Client } from "google-auth-library";
-import crypto from "crypto";
 import { sendEmail } from "../utils/sendEmail.js";
+import generateToken from "../utils/generateToken.js";
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const loginAttempts = new Map();
@@ -12,36 +11,86 @@ const BLOCK_TIME = 2 * 60 * 1000;
 
 export const sendVerificationCode = async (req, res) => {
   try {
-    const { email } = req.body;
+const {
+  name,
+  email,
+  password,
+  phone,
+  role,
+  houseNumber,
+  area,
+  state,
+  pincode,
+  farmLocation,
+  cropTypes,
+  farmingMethod,
+} = req.body;
 
-    const existingUser = await User.findOne({ email });
+const verificationCode = Math.floor(
+  100000 + Math.random() * 900000
+).toString();
 
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
+const existingUser = await User.findOne({ email });
 
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
+if (existingUser) {
+  // User already completed registration
+  if (existingUser.isVerified) {
+    return res.status(400).json({
+      success: false,
+      message: "User already exists.",
+    });
+  }
 
-    global.verificationStore = global.verificationStore || {};
+  // User exists but is not verified → resend OTP
+  existingUser.verificationCode =
+    verificationCode;
 
-    global.verificationStore[email] = {
-      code: verificationCode,
-      expires: Date.now() + 10 * 60 * 1000,
-    };
+  existingUser.verificationCodeExpires =
+    Date.now() + 10 * 60 * 1000;
+
+  await existingUser.save();
+} else {
+  const salt = await bcrypt.genSalt(10);
+
+  const hashedPassword = await bcrypt.hash(
+    password,
+    salt
+  );
+
+  await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    phone,
+    role,
+
+    address: {
+      houseNumber,
+      area,
+      state,
+      pincode,
+    },
+
+    farmLocation,
+    cropTypes,
+    farmingMethod,
+
+    isVerified: false,
+
+    verificationCode,
+
+    verificationCodeExpires:
+      Date.now() + 10 * 60 * 1000,
+  });
+}
+    
 
     await sendEmail(
       email,
       "Green Basket Verification Code",
       `
         <h2>Welcome to Green Basket 🌱</h2>
-
         <p>Your verification code is:</p>
-
         <h1 style="letter-spacing:5px;color:#16a34a;">
           ${verificationCode}
         </h1>
@@ -63,155 +112,56 @@ export const sendVerificationCode = async (req, res) => {
     });
   }
 };
+
 export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
 
-    const data = global.verificationStore?.[email];
+    const user = await User.findOne({
+      email,
+    });
 
-    if (!data) {
-      return res.status(400).json({
+    if (!user) {
+      return res.status(404).json({
         success: false,
-        message: "No verification code found.",
+        message: "User not found.",
       });
     }
 
-    if (Date.now() > data.expires) {
+    if (
+      user.verificationCode !== code
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Verification code expired.",
+        message:
+          "Invalid verification code.",
       });
     }
 
-    if (data.code !== code) {
+    if (
+      user.verificationCodeExpires <
+      Date.now()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid verification code.",
+        message:
+          "Verification code expired.",
       });
     }
 
-    global.verificationStore[email].verified = true;
+    user.isVerified = true;
+
+    user.verificationCode = undefined;
+
+    user.verificationCodeExpires =
+      undefined;
+
+    await user.save();
 
     res.status(200).json({
       success: true,
-      message: "Code verified.",
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
-export const registerUser = async (req, res) => {
-  try {
-    const {
-      name,
-      email,
-      password,
-      phone,
-      role,
-      address,
-      farmLocation,
-      cropTypes,
-      farmingMethod,
-    } = req.body;
-
-    const data = global.verificationStore?.[email];
-    if (!data) {
-      return res.status(400).json({
-        success: false,
-        message: "Please verify your email first.",
-      });
-    }
-
-    if (!data.verified) {
-      return res.status(400).json({
-        success: false,
-        message: "Email verification required.",
-      });
-    }
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({
-        success: false,
-        message: "User already exists",
-      });
-    }
-
-    // Validate farmer fields
-    if (role === "farmer" && (!farmLocation || !cropTypes || !farmingMethod)) {
-      return res.status(400).json({
-        success: false,
-        message: "Farmer profile information is required",
-      });
-    }
-
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Generate 6-digit verification code
-    const verificationCode = Math.floor(
-      100000 + Math.random() * 900000,
-    ).toString();
-
-    // Create user
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-      role,
-      address,
-      farmLocation,
-      cropTypes,
-      farmingMethod,
-    });
-
-    // Create verification URL
-    await sendEmail(
-      user.email,
-      "Green Basket Email Verification",
-      `
-    <h2>Welcome to Green Basket 🌱</h2>
-
-    <p>Your verification code is:</p>
-
-    <h1
-      style="
-        letter-spacing: 5px;
-        color: #16a34a;
-      "
-    >
-      ${verificationCode}
-    </h1>
-
-    <p>
-      This code will expire in 10 minutes.
-    </p>
-  `,
-    );
-
-    // Optional: auto-login after registration
-    generateToken(res, user._id);
-
-    res.status(201).json({
-      success: true,
       message:
-        "Registration successful. A verification code has been sent to your email.",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        isVerified: user.isVerified,
-      },
+        "Email verified successfully.",
     });
   } catch (error) {
     console.error(error);
@@ -321,7 +271,6 @@ export const loginUser = async (req, res) => {
 
     // Create JWT cookie
     generateToken(res, user._id);
-    console.log("Cookie sent");
 
     res.status(200).json({
       success: true,
@@ -400,20 +349,32 @@ export const getProfile = async (req, res) => {
 // Update Profile
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, address } = req.body;
+   const {
+  name,
+  phone,
+  houseNumber,
+  area,
+  state,
+  pincode,
+} = req.body;
 
-    const user = await User.findById(req.user._id);
+const user = await User.findById(req.user._id);
 
-    user.name = name;
-    user.phone = phone;
-    user.address = address;
+user.name = name;
+user.phone = phone;
+
+user.address = {
+  houseNumber,
+  area,
+  state,
+  pincode,
+};
 
     if (req.file) {
       user.profileImage = `/uploads/profiles/${req.file.filename}`;
     }
 
     await user.save();
-
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",

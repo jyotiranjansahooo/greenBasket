@@ -1,7 +1,6 @@
 import express from "express";
 
 import {
-  registerUser,
   loginUser,
   logoutUser,
   getCurrentUser,
@@ -19,7 +18,6 @@ const router = express.Router();
 
 router.post("/send-verification-code", sendVerificationCode);
 router.post("/verify-code", verifyCode);
-router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/google", googleLogin);
 router.post("/logout", logoutUser);

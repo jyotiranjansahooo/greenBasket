@@ -4,19 +4,10 @@ import User from "../models/user.js";
 // Protect Routes
 export const protect = async (req, res, next) => {
   try {
-    console.log("=== AUTH DEBUG ===");
 
-    console.log("Cookies:", req.cookies);
-
-console.log("Cookies received:", req.cookies);
 
 const token = req.cookies.token;
-    console.log("TOKEN:", token);
-
-    console.log(
-      "JWT_SECRET exists:",
-      !!process.env.JWT_SECRET
-    );
+ 
 
     if (!token) {
       return res.status(401).json({
@@ -30,13 +21,11 @@ const token = req.cookies.token;
       process.env.JWT_SECRET
     );
 
-    console.log("DECODED:", decoded);
 
     const user = await User.findById(
       decoded.id
     ).select("-password");
 
-    console.log("USER:", user?._id);
 
     if (!user) {
       return res.status(401).json({

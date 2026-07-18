@@ -36,11 +36,27 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
-    address: {
-      type: String,
-      trim: true,
-      default: "",
-    },
+   address: {
+  houseNumber: {
+    type: String,
+    default: "",
+  },
+
+  area: {
+    type: String,
+    default: "",
+  },
+
+  state: {
+    type: String,
+    default: "",
+  },
+
+  pincode: {
+    type: String,
+    default: "",
+  },
+},
 
     profileImage: {
       type: String,

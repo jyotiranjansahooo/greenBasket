@@ -9,6 +9,45 @@ import toast from "react-hot-toast";
 import useProfile from "@/app/hooks/useProfile";
 import { updateProfile } from "@/services/profileService";
 
+ const indianStates = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ];
+
 export default function ProfilePage() {
   const queryClient = useQueryClient();
 
@@ -48,8 +87,25 @@ export default function ProfilePage() {
 
     data.append("phone", formData.get("phone"));
 
-    data.append("address", formData.get("address"));
+data.append(
+  "houseNumber",
+  formData.get("houseNumber")
+);
 
+data.append(
+  "area",
+  formData.get("area")
+);
+
+data.append(
+  "state",
+  formData.get("state")
+);
+
+data.append(
+  "pincode",
+  formData.get("pincode")
+);
     data.append("profileImage", formData.get("profileImage"));
 
     updateMutation.mutate(data);
@@ -78,7 +134,7 @@ export default function ProfilePage() {
           My Profile
         </h1>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <formform onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-8 flex justify-center">
             <label className="cursor-pointer">
               <Image
@@ -145,16 +201,69 @@ export default function ProfilePage() {
             />
           </div>
 
-          <div>
-            <label className="mb-2 block font-semibold">Address</label>
+         <div>
+  <label className="mb-2 block font-semibold">
+    House Number
+  </label>
 
-            <textarea
-              name="address"
-              rows={4}
-              defaultValue={user?.address}
-              className="w-full rounded-lg border p-3"
-            />
-          </div>
+  <input
+    type="text"
+    name="houseNumber"
+    defaultValue={user?.address?.houseNumber}
+    className="w-full rounded-lg border p-3"
+  />
+</div>
+
+<div>
+  <label className="mb-2 block font-semibold">
+    Area
+  </label>
+
+  <input
+    type="text"
+    name="area"
+    defaultValue={user?.address?.area}
+    className="w-full rounded-lg border p-3"
+  />
+</div>
+
+<div>
+  <label className="mb-2 block font-semibold">
+    State
+  </label>
+
+  <select
+    name="state"
+    defaultValue={user?.address?.state}
+    className="w-full rounded-lg border p-3"
+  >
+    <option value="">
+      Select your state
+    </option>
+
+    {indianStates.map((state) => (
+      <option
+        key={state}
+        value={state}
+      >
+        {state}
+      </option>
+    ))}
+  </select>
+</div>
+
+<div>
+  <label className="mb-2 block font-semibold">
+    Pincode
+  </label>
+
+  <input
+    type="text"
+    name="pincode"
+    defaultValue={user?.address?.pincode}
+    className="w-full rounded-lg border p-3"
+  />
+</div>
 
           <button
             type="submit"
@@ -163,7 +272,7 @@ export default function ProfilePage() {
           >
             {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </button>
-        </form>
+        </formform>
       </div>
     </main>
   );

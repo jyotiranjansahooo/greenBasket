@@ -9,7 +9,6 @@ const generateToken = (res, userId) => {
     }
   );
 
-  console.log("Generated token:", token);
 
   res.cookie("token", token, {
     httpOnly: true,
@@ -19,7 +18,6 @@ const generateToken = (res, userId) => {
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
-  console.log("Cookie set");
 };
 
 export default generateToken;

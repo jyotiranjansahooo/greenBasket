@@ -42,7 +42,6 @@ export const getHeroStats = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(error);
 
     res.status(500).json({
       success: false,

@@ -1,19 +1,57 @@
 "use client";
 
 import api from "@/lib/axios";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useAuth } from "@/context/AuthContext";
 
 export default function RegisterForm() {
   const router = useRouter();
-  const { registerUser } = useAuth();
+  const indianStates = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ];
 
   const [loading, setLoading] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false);
   const [otp, setOtp] = useState("");
+  const [resendTimer, setResendTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
   const [pendingUser, setPendingUser] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -22,7 +60,10 @@ export default function RegisterForm() {
     password: "",
     phone: "",
     role: "customer",
-    address: "",
+    houseNumber: "",
+    area: "",
+    state: "",
+    pincode: "",
     farmLocation: "",
     cropTypes: "",
     farmingMethod: "",
@@ -39,6 +80,11 @@ export default function RegisterForm() {
     e.preventDefault();
 
     try {
+      if (formData.pincode.length !== 6) {
+        toast.error("Pincode must contain exactly 6 digits.");
+
+        return;
+      }
       setLoading(true);
 
       const payload = {
@@ -50,11 +96,11 @@ export default function RegisterForm() {
 
       setPendingUser(payload);
 
-      await api.post("/auth/send-verification-code", {
-        email: payload.email,
-      });
+      await api.post("/auth/send-verification-code", payload);
 
       setShowOtpPopup(true);
+      setCanResend(false);
+      setResendTimer(60);
 
       toast.success("Verification code sent to your email.");
     } catch (error) {
@@ -63,45 +109,61 @@ export default function RegisterForm() {
       setLoading(false);
     }
   };
-  
+
   const handleVerifyOtp = async () => {
-  try {
-    setLoading(true);
-
-    await api.post("/auth/verify-code", {
-      email: pendingUser.email,
-      code: otp,
-    });
-
-    const user = await registerUser(pendingUser);
-
-    toast.success(
-      "Account created successfully!"
-    );
-
-    setShowOtpPopup(false);
-
-    switch (user.role) {
-      case "admin":
-        router.push("/admin/dashboard");
-        break;
-
-      case "farmer":
-        router.push("/farmer/dashboard");
-        break;
-
-      default:
-        router.push("/products");
+    if (otp.length !== 6) {
+      toast.error("Please enter exactly 6 digits.");
+      return;
     }
-  } catch (error) {
-    toast.error(
-      error.response?.data?.message ||
-      "Invalid verification code"
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+
+      await api.post("/auth/verify-code", {
+        email: pendingUser.email,
+        code: otp,
+      });
+
+      toast.success("Account verified successfully!");
+
+      setShowOtpPopup(false);
+
+      router.push("/login");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    if (!showOtpPopup || canResend) return;
+
+    const interval = setInterval(() => {
+      setResendTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCanResend(true);
+          return 0;
+        }
+
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [showOtpPopup, canResend]);
+
+  const handleResendOtp = async () => {
+    try {
+      await api.post("/auth/send-verification-code", pendingUser);
+
+      toast.success("Verification code resent.");
+
+      setCanResend(false);
+      setResendTimer(60);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resend OTP.");
+    }
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center text-gray-800 bg-green-50 px-4">
@@ -162,24 +224,103 @@ export default function RegisterForm() {
               type="text"
               name="phone"
               value={formData.phone}
-              onChange={handleChange}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, "");
+
+                if (value.length <= 10) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    phone: value,
+                  }));
+                }
+              }}
               required
               placeholder="Enter your phone number"
               className="w-full rounded-lg border p-3"
             />
+
+            {formData.phone.length > 0 && formData.phone.length !== 10 && (
+              <p className="mt-1 text-sm text-red-500">
+                Phone number must contain exactly 10 digits.
+              </p>
+            )}
           </div>
 
-          <div>
-            <label className="mb-2 block font-semibold">Address</label>
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <div>
+              <label className="mb-2 block font-semibold">House Number</label>
 
-            <textarea
-              name="address"
-              rows={3}
-              value={formData.address}
-              onChange={handleChange}
-              placeholder="Enter your proper address"
-              className="w-full rounded-lg border p-3"
-            />
+              <input
+                type="text"
+                name="houseNumber"
+                value={formData.houseNumber}
+                onChange={handleChange}
+                placeholder="House / Flat No."
+                className="w-full rounded-lg border p-3"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold">Area / Street</label>
+
+              <input
+                type="text"
+                name="area"
+                value={formData.area}
+                onChange={handleChange}
+                placeholder="Area / Street"
+                className="w-full rounded-lg border p-3"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold">State</label>
+
+              <select
+                name="state"
+                value={formData.state}
+                onChange={handleChange}
+                required
+                className="w-full rounded-lg border p-3"
+              >
+                <option value="">Select your state</option>
+
+                {indianStates.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-2 block font-semibold">Pincode</label>
+
+              <input
+                type="text"
+                name="pincode"
+                value={formData.pincode}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
+
+                  if (value.length <= 6) {
+                    setFormData((prev) => ({
+                      ...prev,
+                      pincode: value,
+                    }));
+                  }
+                }}
+                required
+                placeholder="6-digit pincode"
+                className="w-full rounded-lg border p-3"
+              />
+
+              {formData.pincode.length > 0 && formData.pincode.length !== 6 && (
+                <p className="mt-1 text-sm text-red-500">
+                  Pincode must contain exactly 6 digits.
+                </p>
+              )}
+            </div>
           </div>
 
           <div>
@@ -270,40 +411,60 @@ export default function RegisterForm() {
             Login
           </Link>
         </p>
-      {showOtpPopup && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        {showOtpPopup && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+              <h2 className="text-2xl font-bold text-center text-green-700">
+                Verify Email
+              </h2>
 
-      <h2 className="text-2xl font-bold text-center text-green-700">
-        Verify Email
-      </h2>
+              <p className="mt-2 text-center text-gray-500">
+                Enter the 6-digit code sent to your email.
+              </p>
 
-      <p className="mt-2 text-center text-gray-500">
-        Enter the 6-digit code sent to your email.
-      </p>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "");
 
-      <input
-        type="text"
-        value={otp}
-        onChange={(e) => setOtp(e.target.value)}
-        maxLength={6}
-        placeholder="Enter OTP"
-        className="mt-6 w-full rounded-lg border p-3 text-center text-2xl tracking-[10px]"
-      />
+                  if (value.length <= 6) {
+                    setOtp(value);
+                  }
+                }}
+                maxLength={6}
+                placeholder="Enter OTP"
+                className="mt-6 w-full rounded-lg border p-3 text-center text-2xl tracking-[10px]"
+              />
 
-      <button
-        type="button"
-        onClick={handleVerifyOtp}
-        className="mt-5 w-full rounded-lg bg-green-600 py-3 font-semibold text-white hover:bg-green-700"
-      >
-        Verify
-      </button>
+              <button
+                type="button"
+                onClick={handleVerifyOtp}
+                disabled={loading}
+                className="mt-5 w-full rounded-lg bg-green-600 py-3 font-semibold text-white hover:bg-green-700 disabled:opacity-60"
+              >
+                {loading ? "Verification in progress..." : "Verify"}
+              </button>
 
-    </div>
-  </div>
-)}
-</div>
-
+              <div className="mt-4 text-center">
+                {canResend ? (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    className="font-semibold text-green-600 hover:underline"
+                  >
+                    Resend OTP
+                  </button>
+                ) : (
+                  <p className="text-sm text-gray-500">
+                    Resend OTP in {resendTimer}s
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
