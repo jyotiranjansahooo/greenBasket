@@ -9,18 +9,17 @@ const generateToken = (res, userId) => {
     }
   );
 
+  console.log("Generated token:", token);
+
   res.cookie("token", token, {
-  httpOnly: true,
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
 
-  secure: process.env.NODE_ENV === "production",
-
-  sameSite:
-    process.env.NODE_ENV === "production"
-      ? "none"
-      : "lax",
-
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+  console.log("Cookie set");
 };
 
 export default generateToken;

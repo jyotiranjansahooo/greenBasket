@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -20,8 +20,33 @@ export default function LoginForm() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [blockedUntil, setBlockedUntil] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const isBlocked = timeLeft > 0;
+
+  useEffect(() => {
+    if (!blockedUntil) return;
+
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((blockedUntil - Date.now()) / 1000);
+
+      if (remaining <= 0) {
+        clearInterval(interval);
+
+        setBlockedUntil(null);
+
+        setTimeLeft(0);
+
+        setFailedAttempts(0);
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [blockedUntil]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -32,11 +57,18 @@ export default function LoginForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isBlocked) {
+      toast.error("Login disabled for 2 minutes.");
+
+      return;
+    }
 
     try {
       setLoading(true);
 
       const user = await loginUser(formData.email, formData.password);
+      setFailedAttempts(0);
+      setBlockedUntil(null);
 
       toast.success("Login successful!");
 
@@ -53,7 +85,21 @@ export default function LoginForm() {
           router.push("/");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Login failed");
+      const attempts = failedAttempts + 1;
+
+      setFailedAttempts(attempts);
+
+      if (attempts >= 3) {
+        const blockTime = Date.now() + 2 * 60 * 1000;
+
+        setBlockedUntil(blockTime);
+
+        setTimeLeft(120);
+
+        toast.error("Too many failed attempts. Login blocked for 2 minutes.");
+      } else {
+        toast.error(error?.response?.data?.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -109,11 +155,22 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || isBlocked}
             className="w-full rounded-lg bg-green-600 py-3 font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-green-400"
           >
-            {loading ? "Logging in..." : "Login"}
+            {isBlocked
+              ? "Blocked for 2 minutes"
+              : loading
+                ? "Logging in..."
+                : "Login"}
           </button>
+
+          {isBlocked && (
+            <p className="mt-3 text-center text-xs sm:text-sm font-medium text-red-600 wrap-break-words px-2">
+              Try again in {Math.floor(timeLeft / 60)}:
+              {(timeLeft % 60).toString().padStart(2, "0")}
+            </p>
+          )}
         </form>
 
         <div className="my-6 flex items-center gap-3">
@@ -126,47 +183,34 @@ export default function LoginForm() {
 
         <div className="flex justify-center">
           <GoogleLogin
-  onSuccess={async (
-    credentialResponse
-  ) => {
-    try {
-      const user =
-        await googleLoginUser(
-          credentialResponse.credential
-        );
+            onSuccess={async (credentialResponse) => {
+              try {
+                const user = await googleLoginUser(
+                  credentialResponse.credential,
+                );
 
-      toast.success(
-        "Login successful!"
-      );
+                toast.success("Login successful!");
 
-      switch (user.role) {
-        case "admin":
-          router.push(
-            "/admin/dashboard"
-          );
-          break;
+                switch (user.role) {
+                  case "admin":
+                    router.push("/admin/dashboard");
+                    break;
 
-        case "farmer":
-          router.push(
-            "/farmer/dashboard"
-          );
-          break;
+                  case "farmer":
+                    router.push("/farmer/dashboard");
+                    break;
 
-        default:
-          router.push("/");
-      }
-    } catch (error) {
-      toast.error(
-        "Google login failed"
-      );
-    }
-  }}
-  onError={() => {
-    toast.error(
-      "Google login failed"
-    );
-  }}
-/>
+                  default:
+                    router.push("/");
+                }
+              } catch (error) {
+                toast.error("Google login failed");
+              }
+            }}
+            onError={() => {
+              toast.error("Google login failed");
+            }}
+          />
         </div>
 
         <p className="mt-6 text-center text-sm">

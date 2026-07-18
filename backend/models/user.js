@@ -20,15 +20,15 @@ const userSchema = new mongoose.Schema(
     },
 
     password: {
-  type: String,
-  minlength: 8,
-  select: false,
-},
+      type: String,
+      minlength: 8,
+      select: false,
+    },
 
-   phone: {
-  type: String,
-  trim: true,
-},
+    phone: {
+      type: String,
+      trim: true,
+    },
 
     role: {
       type: String,
@@ -70,17 +70,21 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    language: {
-  type: String,
-  enum: ["en", "hi", "or"],
-  default: "en",
-},
+
+    verificationCode: {
+      type: String,
+    },
+
+    verificationCodeExpires: {
+      type: Date,
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true,
-  }
+  },
 );
-
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
