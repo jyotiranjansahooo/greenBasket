@@ -26,6 +26,7 @@ export const getCurrentUser = async () => {
 
   return data;
 };
+
 export async function googleLogin(
   credential
 ) {

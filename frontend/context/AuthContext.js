@@ -116,11 +116,7 @@ export function AuthProvider({ children }) {
   };
 
   // Logout
-  const logoutUser = async () => {
-    await logout();
-
-    setUser(null);
-  };
+  a
 
   if (loading) {
     return <FullScreenLoader />;
