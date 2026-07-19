@@ -36,27 +36,27 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
-   address: {
-  houseNumber: {
-    type: String,
-    default: "",
-  },
+    address: {
+      houseNumber: {
+        type: String,
+        default: "",
+      },
 
-  area: {
-    type: String,
-    default: "",
-  },
+      area: {
+        type: String,
+        default: "",
+      },
 
-  state: {
-    type: String,
-    default: "",
-  },
+      state: {
+        type: String,
+        default: "",
+      },
 
-  pincode: {
-    type: String,
-    default: "",
-  },
-},
+      pincode: {
+        type: String,
+        default: "",
+      },
+    },
 
     profileImage: {
       type: String,
@@ -94,8 +94,17 @@ const userSchema = new mongoose.Schema(
     verificationCodeExpires: {
       type: Date,
     },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
+    resetPasswordCode: {
+      type: String,
+    },
+
+    resetPasswordCodeExpires: {
+      type: Date,
+    },
+    resetPasswordVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

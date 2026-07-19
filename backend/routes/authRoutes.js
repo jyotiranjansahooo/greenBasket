@@ -9,6 +9,9 @@ import {
   googleLogin,
   verifyCode,
   sendVerificationCode,
+  forgotPassword,
+  verifyResetCode,
+  resetPassword,
 } from "../controllers/authController.js";
 
 import profileUpload from "../middleware/profileUpload.js";
@@ -21,6 +24,9 @@ router.post("/verify-code", verifyCode);
 router.post("/login", loginUser);
 router.post("/google", googleLogin);
 router.post("/logout", logoutUser);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-reset-code", verifyResetCode);
+router.post("/reset-password", resetPassword);
 router.get("/me", protect, getCurrentUser);
 router.get("/profile", protect, getProfile);
 router.put(

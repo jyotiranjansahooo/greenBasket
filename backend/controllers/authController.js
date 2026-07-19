@@ -9,81 +9,78 @@ const loginAttempts = new Map();
 const MAX_ATTEMPTS = 3;
 const BLOCK_TIME = 2 * 60 * 1000;
 
+const resetOtpAttempts = new Map();
+const MAX_RESET_ATTEMPTS = 3;
+const RESET_BLOCK_TIME = 2 * 60 * 1000;
+
 export const sendVerificationCode = async (req, res) => {
   try {
-const {
-  name,
-  email,
-  password,
-  phone,
-  role,
-  houseNumber,
-  area,
-  state,
-  pincode,
-  farmLocation,
-  cropTypes,
-  farmingMethod,
-} = req.body;
-
-const verificationCode = Math.floor(
-  100000 + Math.random() * 900000
-).toString();
-
-const existingUser = await User.findOne({ email });
-
-if (existingUser) {
-  // User already completed registration
-  if (existingUser.isVerified) {
-    return res.status(400).json({
-      success: false,
-      message: "User already exists.",
-    });
-  }
-
-  // User exists but is not verified → resend OTP
-  existingUser.verificationCode =
-    verificationCode;
-
-  existingUser.verificationCodeExpires =
-    Date.now() + 10 * 60 * 1000;
-
-  await existingUser.save();
-} else {
-  const salt = await bcrypt.genSalt(10);
-
-  const hashedPassword = await bcrypt.hash(
-    password,
-    salt
-  );
-
-  await User.create({
-    name,
-    email,
-    password: hashedPassword,
-    phone,
-    role,
-
-    address: {
+    const {
+      name,
+      email,
+      password,
+      phone,
+      role,
       houseNumber,
       area,
       state,
       pincode,
-    },
+      farmLocation,
+      cropTypes,
+      farmingMethod,
+    } = req.body;
 
-    farmLocation,
-    cropTypes,
-    farmingMethod,
+    const verificationCode = Math.floor(
+      100000 + Math.random() * 900000,
+    ).toString();
 
-    isVerified: false,
+    const existingUser = await User.findOne({ email });
 
-    verificationCode,
+    if (existingUser) {
+      // User already completed registration
+      if (existingUser.isVerified) {
+        return res.status(400).json({
+          success: false,
+          message: "User already exists.",
+        });
+      }
 
-    verificationCodeExpires:
-      Date.now() + 10 * 60 * 1000,
-  });
-}
-    
+      // User exists but is not verified → resend OTP
+      existingUser.verificationCode = verificationCode;
+
+      existingUser.verificationCodeExpires = Date.now() + 10 * 60 * 1000;
+
+      await existingUser.save();
+    } else {
+      const salt = await bcrypt.genSalt(10);
+
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        phone,
+        role,
+
+        address: {
+          houseNumber,
+          area,
+          state,
+          pincode,
+        },
+
+        farmLocation,
+        cropTypes,
+        farmingMethod,
+
+        isVerified: false,
+
+        verificationCode,
+
+        verificationCodeExpires: Date.now() + 10 * 60 * 1000,
+      });
+    }
 
     await sendEmail(
       email,
@@ -128,24 +125,43 @@ export const verifyCode = async (req, res) => {
       });
     }
 
-    if (
-      user.verificationCode !== code
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Invalid verification code.",
-      });
-    }
+   if (user.resetPasswordCode !== code) {
+  const currentAttempts =
+    resetOtpAttempts.get(email) || {
+      count: 0,
+    };
 
-    if (
-      user.verificationCodeExpires <
-      Date.now()
-    ) {
+  currentAttempts.count += 1;
+
+  if (
+    currentAttempts.count >= MAX_RESET_ATTEMPTS
+  ) {
+    currentAttempts.blockedUntil =
+      Date.now() + RESET_BLOCK_TIME;
+  }
+
+  resetOtpAttempts.set(
+    email,
+    currentAttempts
+  );
+
+  return res.status(400).json({
+    success: false,
+    message:
+      currentAttempts.count >=
+      MAX_RESET_ATTEMPTS
+        ? "Too many incorrect OTP attempts. Please try again later."
+        : `Invalid OTP. ${
+            MAX_RESET_ATTEMPTS -
+            currentAttempts.count
+          } attempts remaining.`,
+  });
+}
+
+    if (user.verificationCodeExpires < Date.now()) {
       return res.status(400).json({
         success: false,
-        message:
-          "Verification code expired.",
+        message: "Verification code expired.",
       });
     }
 
@@ -153,15 +169,13 @@ export const verifyCode = async (req, res) => {
 
     user.verificationCode = undefined;
 
-    user.verificationCodeExpires =
-      undefined;
+    user.verificationCodeExpires = undefined;
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      message:
-        "Email verified successfully.",
+      message: "Email verified successfully.",
     });
   } catch (error) {
     console.error(error);
@@ -302,10 +316,7 @@ export const logoutUser = (req, res) => {
 
     secure: process.env.NODE_ENV === "production",
 
-    sameSite:
-      process.env.NODE_ENV === "production"
-        ? "none"
-        : "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 
     path: "/",
 
@@ -359,26 +370,19 @@ export const getProfile = async (req, res) => {
 // Update Profile
 export const updateProfile = async (req, res) => {
   try {
-   const {
-  name,
-  phone,
-  houseNumber,
-  area,
-  state,
-  pincode,
-} = req.body;
+    const { name, phone, houseNumber, area, state, pincode } = req.body;
 
-const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id);
 
-user.name = name;
-user.phone = phone;
+    user.name = name;
+    user.phone = phone;
 
-user.address = {
-  houseNumber,
-  area,
-  state,
-  pincode,
-};
+    user.address = {
+      houseNumber,
+      area,
+      state,
+      pincode,
+    };
 
     if (req.file) {
       user.profileImage = `/uploads/profiles/${req.file.filename}`;
@@ -480,6 +484,200 @@ export const verifyEmail = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Email verified successfully",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({
+      email,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    user.resetPasswordCode = code;
+    user.resetPasswordCodeExpires = Date.now() + 10 * 60 * 1000;
+    user.resetPasswordVerified = false;
+    resetOtpAttempts.delete(email);
+
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Reset Password OTP",
+      `
+        <h2>Green Basket Password Reset</h2>
+
+        <p>Your OTP is:</p>
+
+        <h1>${code}</h1>
+
+        <p>
+          This OTP expires in
+          10 minutes.
+        </p>
+      `,
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "OTP sent.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const verifyResetCode = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const attempts = resetOtpAttempts.get(email);
+
+if (
+  attempts &&
+  attempts.count >= MAX_RESET_ATTEMPTS &&
+  attempts.blockedUntil > Date.now()
+) {
+  const remainingSeconds = Math.ceil(
+    (attempts.blockedUntil - Date.now()) / 1000
+  );
+
+  return res.status(429).json({
+    success: false,
+    message: `Too many incorrect OTP attempts. Please try again in ${remainingSeconds} seconds.`,
+  });
+}
+    const user = await User.findOne({
+      email,
+    });
+
+   if (!user) {
+  return res.status(400).json({
+    success: false,
+    message: "Invalid OTP.",
+  });
+}
+
+if (user.resetPasswordCode !== code) {
+  const currentAttempts =
+    resetOtpAttempts.get(email) || {
+      count: 0,
+    };
+
+  currentAttempts.count += 1;
+
+  if (
+    currentAttempts.count >=
+    MAX_RESET_ATTEMPTS
+  ) {
+    currentAttempts.blockedUntil =
+      Date.now() + RESET_BLOCK_TIME;
+
+    user.resetPasswordCode =
+      undefined;
+
+    user.resetPasswordCodeExpires =
+      undefined;
+
+    user.resetPasswordVerified =
+      false;
+
+    await user.save();
+  }
+
+  resetOtpAttempts.set(
+    email,
+    currentAttempts
+  );
+
+  return res.status(400).json({
+    success: false,
+    message:
+      currentAttempts.count >=
+      MAX_RESET_ATTEMPTS
+        ? "Too many incorrect OTP attempts. Your OTP has expired. Please try again in 2 minutes and request a new OTP."
+        : `Invalid OTP. ${
+            MAX_RESET_ATTEMPTS -
+            currentAttempts.count
+          } attempts remaining.`,
+  });
+}
+
+    if (user.resetPasswordCodeExpires < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP expired.",
+      });
+    }
+
+    user.resetPasswordVerified = true;
+    resetOtpAttempts.delete(email);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "OTP verified.",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({
+      email,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
+    }
+    if (!user.resetPasswordVerified) {
+  return res.status(400).json({
+    success: false,
+    message: "Please verify the OTP first.",
+  });
+}
+
+    const salt = await bcrypt.genSalt(10);
+
+    user.password = await bcrypt.hash(password, salt);
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully.",
     });
   } catch (error) {
     console.error(error);

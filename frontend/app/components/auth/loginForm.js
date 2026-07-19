@@ -4,16 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-
 import { GoogleLogin } from "@react-oauth/google";
-
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
   const router = useRouter();
-
   const { loginUser, googleLoginUser } = useAuth();
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -28,23 +24,18 @@ export default function LoginForm() {
 
   useEffect(() => {
     if (!blockedUntil) return;
-
     const interval = setInterval(() => {
       const remaining = Math.ceil((blockedUntil - Date.now()) / 1000);
 
       if (remaining <= 0) {
         clearInterval(interval);
-
         setBlockedUntil(null);
-
         setTimeLeft(0);
-
         setFailedAttempts(0);
       } else {
         setTimeLeft(remaining);
       }
     }, 1000);
-
     return () => clearInterval(interval);
   }, [blockedUntil]);
 
@@ -59,17 +50,14 @@ export default function LoginForm() {
     e.preventDefault();
     if (isBlocked) {
       toast.error("Login disabled for 2 minutes.");
-
       return;
     }
 
     try {
       setLoading(true);
-
       const user = await loginUser(formData.email, formData.password);
       setFailedAttempts(0);
       setBlockedUntil(null);
-
       toast.success("Login successful!");
 
       switch (user.role) {
@@ -150,6 +138,13 @@ export default function LoginForm() {
               >
                 {showPassword ? "Hide" : "Show"}
               </button>
+            </div>
+            <div className="mt-2 text-center">
+              <Link
+                href="/forgot-password"
+                className="text-sm text-green-600 hover:underline">
+                Forgot password?
+              </Link>
             </div>
           </div>
 
