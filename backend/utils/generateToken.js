@@ -28,6 +28,7 @@ res.cookie("token", token, {
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
+console.log("Cookie sent");
 };
 
 export default generateToken;
