@@ -312,16 +312,13 @@ export const loginUser = async (req, res) => {
 // @access  Private
 export const logoutUser = (req, res) => {
   res.cookie("token", "", {
-    httpOnly: true,
-
-    secure: process.env.NODE_ENV === "production",
-
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-
-    path: "/",
-
-    expires: new Date(0),
-  });
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  partitioned: true,
+  path: "/",
+  expires: new Date(0),
+});
 
   res.status(200).json({
     success: true,
