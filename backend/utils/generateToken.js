@@ -8,6 +8,15 @@ const generateToken = (res, userId) => {
       expiresIn: "7d",
     }
   );
+  console.log("NODE_ENV:", process.env.NODE_ENV);
+
+   console.log({
+    secure: process.env.NODE_ENV === "production",
+    sameSite:
+      process.env.NODE_ENV === "production"
+        ? "none"
+        : "lax",
+  });
 
 res.cookie("token", token, {
   httpOnly: true,
