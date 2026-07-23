@@ -7,8 +7,10 @@ export default function useMarketplaceProducts(filters = {}) {
   return useQuery({
     queryKey: ["marketplace-products", filters],
 
-    queryFn: async () => {
-      return await getProducts(filters);
-    },
+    queryFn: () => getProducts(filters),
+
+    staleTime: 1000 * 60 * 5, // 5 minutes
+
+    placeholderData: (previousData) => previousData,
   });
 }

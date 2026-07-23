@@ -3,8 +3,7 @@ import User from "../models/user.js";
 
 // Protect Routes
 export const protect = async (req, res, next) => {
-  console.log("Incoming cookies:", req.cookies);
-console.log("Token:", req.cookies.token);
+  
   try {
 const token = req.cookies.token;
  
