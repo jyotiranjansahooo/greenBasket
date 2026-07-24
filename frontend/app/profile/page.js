@@ -9,44 +9,44 @@ import toast from "react-hot-toast";
 import useProfile from "@/app/hooks/useProfile";
 import { updateProfile } from "@/services/profileService";
 
- const indianStates = [
-    "Andhra Pradesh",
-    "Arunachal Pradesh",
-    "Assam",
-    "Bihar",
-    "Chhattisgarh",
-    "Goa",
-    "Gujarat",
-    "Haryana",
-    "Himachal Pradesh",
-    "Jharkhand",
-    "Karnataka",
-    "Kerala",
-    "Madhya Pradesh",
-    "Maharashtra",
-    "Manipur",
-    "Meghalaya",
-    "Mizoram",
-    "Nagaland",
-    "Odisha",
-    "Punjab",
-    "Rajasthan",
-    "Sikkim",
-    "Tamil Nadu",
-    "Telangana",
-    "Tripura",
-    "Uttar Pradesh",
-    "Uttarakhand",
-    "West Bengal",
-    "Andaman and Nicobar Islands",
-    "Chandigarh",
-    "Dadra and Nagar Haveli and Daman and Diu",
-    "Delhi",
-    "Jammu and Kashmir",
-    "Ladakh",
-    "Lakshadweep",
-    "Puducherry",
-  ];
+const indianStates = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry",
+];
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
@@ -87,25 +87,13 @@ export default function ProfilePage() {
 
     data.append("phone", formData.get("phone"));
 
-data.append(
-  "houseNumber",
-  formData.get("houseNumber")
-);
+    data.append("houseNumber", formData.get("houseNumber"));
 
-data.append(
-  "area",
-  formData.get("area")
-);
+    data.append("area", formData.get("area"));
 
-data.append(
-  "state",
-  formData.get("state")
-);
+    data.append("state", formData.get("state"));
 
-data.append(
-  "pincode",
-  formData.get("pincode")
-);
+    data.append("pincode", formData.get("pincode"));
     data.append("profileImage", formData.get("profileImage"));
 
     updateMutation.mutate(data);
@@ -113,8 +101,17 @@ data.append(
 
   if (isPending) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl font-bold">Loading Profile...</h1>
+      <main className="flex min-h-screen items-center justify-center bg-[#a3c28f]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative h-16 w-16">
+            <div className="absolute inset-0 rounded-full border-4 border-green-200"></div>
+            <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[#346739] border-r-[#346739]"></div>
+          </div>
+
+          <p className="text-lg font-semibold tracking-wide text-[#19591f]">
+            Loading Profile...
+          </p>
+        </div>
       </main>
     );
   }
@@ -134,7 +131,7 @@ data.append(
           My Profile
         </h1>
 
-        <formform onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="mb-8 flex justify-center">
             <label className="cursor-pointer">
               <Image
@@ -201,69 +198,56 @@ data.append(
             />
           </div>
 
-         <div>
-  <label className="mb-2 block font-semibold">
-    House Number
-  </label>
+          <div>
+            <label className="mb-2 block font-semibold">House Number</label>
 
-  <input
-    type="text"
-    name="houseNumber"
-    defaultValue={user?.address?.houseNumber}
-    className="w-full rounded-lg border p-3"
-  />
-</div>
+            <input
+              type="text"
+              name="houseNumber"
+              defaultValue={user?.address?.houseNumber}
+              className="w-full rounded-lg border p-3"
+            />
+          </div>
 
-<div>
-  <label className="mb-2 block font-semibold">
-    Area
-  </label>
+          <div>
+            <label className="mb-2 block font-semibold">Area</label>
 
-  <input
-    type="text"
-    name="area"
-    defaultValue={user?.address?.area}
-    className="w-full rounded-lg border p-3"
-  />
-</div>
+            <input
+              type="text"
+              name="area"
+              defaultValue={user?.address?.area}
+              className="w-full rounded-lg border p-3"
+            />
+          </div>
 
-<div>
-  <label className="mb-2 block font-semibold">
-    State
-  </label>
+          <div>
+            <label className="mb-2 block font-semibold">State</label>
 
-  <select
-    name="state"
-    defaultValue={user?.address?.state}
-    className="w-full rounded-lg border p-3"
-  >
-    <option value="">
-      Select your state
-    </option>
+            <select
+              name="state"
+              defaultValue={user?.address?.state}
+              className="w-full rounded-lg border p-3"
+            >
+              <option value="">Select your state</option>
 
-    {indianStates.map((state) => (
-      <option
-        key={state}
-        value={state}
-      >
-        {state}
-      </option>
-    ))}
-  </select>
-</div>
+              {indianStates.map((state) => (
+                <option key={state} value={state}>
+                  {state}
+                </option>
+              ))}
+            </select>
+          </div>
 
-<div>
-  <label className="mb-2 block font-semibold">
-    Pincode
-  </label>
+          <div>
+            <label className="mb-2 block font-semibold">Pincode</label>
 
-  <input
-    type="text"
-    name="pincode"
-    defaultValue={user?.address?.pincode}
-    className="w-full rounded-lg border p-3"
-  />
-</div>
+            <input
+              type="text"
+              name="pincode"
+              defaultValue={user?.address?.pincode}
+              className="w-full rounded-lg border p-3"
+            />
+          </div>
 
           <button
             type="submit"
@@ -272,7 +256,7 @@ data.append(
           >
             {updateMutation.isPending ? "Saving..." : "Save Changes"}
           </button>
-        </formform>
+        </form>
       </div>
     </main>
   );

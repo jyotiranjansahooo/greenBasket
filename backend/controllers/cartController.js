@@ -13,7 +13,7 @@ export const addToCart = async (req, res) => {
         message: "Product not found",
       });
     }
-   let cart = await Cart.findOne({
+    let cart = await Cart.findOne({
       user: req.user._id,
     });
 
@@ -24,30 +24,8 @@ export const addToCart = async (req, res) => {
       });
     }
 
-    // Prevent products from different farmers
-if (cart.items.length > 0) {
-  const firstCartItem = await Product.findById(
-    cart.items[0].product
-  );
-
-  if (
-    firstCartItem &&
-    firstCartItem.farmer.toString() !==
-      product.farmer.toString()
-  ) {
-    return res.status(400).json({
-      success: false,
-      message:
-        "You can only add products from one farmer at a time. Please clear your cart first.",
-    });
-  }
-}
-
-
-
     const existingItem = cart.items.find(
-      (item) =>
-        item.product.toString() === productId
+      (item) => item.product.toString() === productId,
     );
 
     if (existingItem) {
@@ -66,7 +44,6 @@ if (cart.items.length > 0) {
       message: "Product added to cart",
       cart,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -81,14 +58,13 @@ export const getCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({
       user: req.user._id,
-    })
-      .populate({
-        path: "items.product",
-        populate: {
-          path: "category",
-          select: "name",
-        },
-      });
+    }).populate({
+      path: "items.product",
+      populate: {
+        path: "category",
+        select: "name",
+      },
+    });
 
     if (!cart) {
       return res.status(200).json({
@@ -103,7 +79,6 @@ export const getCart = async (req, res) => {
       success: true,
       cart,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -114,7 +89,7 @@ export const getCart = async (req, res) => {
   }
 };
 
-//update cart item 
+//update cart item
 export const updateCartItem = async (req, res) => {
   try {
     const { quantity } = req.body;
@@ -138,8 +113,7 @@ export const updateCartItem = async (req, res) => {
     }
 
     const item = cart.items.find(
-      (item) =>
-        item.product.toString() === req.params.productId
+      (item) => item.product.toString() === req.params.productId,
     );
 
     if (!item) {
@@ -158,7 +132,6 @@ export const updateCartItem = async (req, res) => {
       message: "Cart updated successfully",
       cart,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -184,8 +157,7 @@ export const removeFromCart = async (req, res) => {
     }
 
     cart.items = cart.items.filter(
-      (item) =>
-        item.product.toString() !== req.params.productId
+      (item) => item.product.toString() !== req.params.productId,
     );
 
     await cart.save();
@@ -195,7 +167,6 @@ export const removeFromCart = async (req, res) => {
       message: "Product removed from cart",
       cart,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -229,7 +200,6 @@ export const clearCart = async (req, res) => {
       message: "Cart cleared successfully",
       cart,
     });
-
   } catch (error) {
     console.error(error);
 

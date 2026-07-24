@@ -25,10 +25,19 @@ export default function AdminDashboardPage() {
     queryFn: getPlatformAnalytics,
   });
 
-  if (isPending) {
+   if (isPending) {
     return (
-      <main className="flex bg-[#71AC7D] min-h-screen items-center justify-center">
-        <h1 className="text-3xl font-bold text-white">Loading analytics...</h1>
+      <main className="flex min-h-screen items-center justify-center bg-[#8eb673]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative h-16 w-16">
+            <div className="absolute inset-0 rounded-full border-4 border-green-200"></div>
+            <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[#346739] border-r-[#346739]"></div>
+          </div>
+
+          <p className="text-lg font-semibold tracking-wide text-[#144a19]">
+            Loading admin dashboard...
+          </p>
+        </div>
       </main>
     );
   }
