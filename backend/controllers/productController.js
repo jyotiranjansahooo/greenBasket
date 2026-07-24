@@ -1,8 +1,6 @@
 import Product from "../models/product.js";
 import Category from "../models/category.js";
 
-
-
 //product create
 export const createProduct = async (req, res) => {
   try {
@@ -19,12 +17,11 @@ export const createProduct = async (req, res) => {
       isFeatured,
     } = req.body;
     if (!quantity || Number(quantity) <= 0) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Please enter a valid stock quantity.",
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid stock quantity.",
+      });
+    }
 
     // Check farmer verification
     if (!req.user.isVerified) {
@@ -45,11 +42,7 @@ export const createProduct = async (req, res) => {
     }
 
     // Images uploaded by Multer
- const imagePaths = req.files
-  ? req.files.map(
-      (file) => file.path
-    )
-  : [];
+    const imagePaths = req.files ? req.files.map((file) => file.path) : [];
 
     // Create product
     const product = await Product.create({
@@ -72,7 +65,6 @@ export const createProduct = async (req, res) => {
       message: "Product created successfully",
       product,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -83,23 +75,22 @@ export const createProduct = async (req, res) => {
   }
 };
 
-
 //get all products
 
 export const getProducts = async (req, res) => {
   try {
     const {
-  search,
-  category,
-  farmer,
-  farmingMethod,
-  minPrice,
-  maxPrice,
-  rating,
-  page = 1,
-  limit = 10,
-  sort = "latest",
-} = req.query;
+      search,
+      category,
+      farmer,
+      farmingMethod,
+      minPrice,
+      maxPrice,
+      rating,
+      page = 1,
+      limit = 20,
+      sort = "latest",
+    } = req.query;
 
     const query = {
       availability: true,
@@ -141,38 +132,38 @@ export const getProducts = async (req, res) => {
       }
     }
     // Rating filter
-if (rating) {
-  query.rating = {
-    $gte: Number(rating),
-  };
-}
+    if (rating) {
+      query.rating = {
+        $gte: Number(rating),
+      };
+    }
 
     let sortOption = {};
 
     switch (sort) {
-  case "priceAsc":
-    sortOption.price = 1;
-    break;
+      case "priceAsc":
+        sortOption.price = 1;
+        break;
 
-  case "priceDesc":
-    sortOption.price = -1;
-    break;
+      case "priceDesc":
+        sortOption.price = -1;
+        break;
 
-  case "rating":
-    sortOption.rating = -1;
-    break;
+      case "rating":
+        sortOption.rating = -1;
+        break;
 
-  case "popular":
-    sortOption.numReviews = -1;
-    break;
+      case "popular":
+        sortOption.numReviews = -1;
+        break;
 
-  case "oldest":
-    sortOption.createdAt = 1;
-    break;
+      case "oldest":
+        sortOption.createdAt = 1;
+        break;
 
-  default:
-    sortOption.createdAt = -1;
-}
+      default:
+        sortOption.createdAt = -1;
+    }
 
     const skip = (page - 1) * limit;
 
@@ -203,9 +194,7 @@ if (rating) {
   }
 };
 
-// @desc    Get Single Product
-// @route   GET /api/products/:id
-// @access  Public
+// @desc    Get Single Product ,route GET /api/products/:id, access  Public
 
 export const getProductById = async (req, res) => {
   try {
@@ -231,9 +220,6 @@ export const getProductById = async (req, res) => {
     });
   }
 };
-
-
-
 
 export const updateProduct = async (req, res) => {
   try {
@@ -281,11 +267,11 @@ export const updateProduct = async (req, res) => {
     product.origin = req.body.origin;
 
     // Replace images only if new ones are uploaded
-   if (req.files && req.files.length > 0) {
-  product.images = req.files.map(
-    (file) => `/api/uploads/products/${file.filename}`
-  );
-}
+    if (req.files && req.files.length > 0) {
+      product.images = req.files.map(
+        (file) => `/api/uploads/products/${file.filename}`,
+      );
+    }
 
     await product.save();
 
@@ -304,9 +290,7 @@ export const updateProduct = async (req, res) => {
   }
 };
 
-
 // admin    Delete Product
-
 
 export const deleteProduct = async (req, res) => {
   const product = await Product.findById(req.params.id);
@@ -351,23 +335,16 @@ export const getFarmerProducts = async (req, res) => {
   }
 };
 
-export const updateProductStock = async (
-  req,
-  res
-) => {
+export const updateProductStock = async (req, res) => {
   try {
     const { amount } = req.body;
 
-    const product =
-      await Product.findById(
-        req.params.id
-      );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
       return res.status(404).json({
         success: false,
-        message:
-          "Product not found",
+        message: "Product not found",
       });
     }
 
@@ -388,8 +365,7 @@ export const updateProductStock = async (
 
     res.status(500).json({
       success: false,
-      message:
-        "Server Error",
+      message: "Server Error",
     });
   }
 };

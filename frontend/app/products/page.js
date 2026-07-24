@@ -20,10 +20,19 @@ export default function ProductsPage() {
   };
 
   const [filters, setFilters] = useState(initialFilters);
-
+  const [page, setPage] = useState(1);
   const [draftFilters, setDraftFilters] = useState(initialFilters);
   useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, [page]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
+      setPage(1);
+
       setFilters((prev) => ({
         ...prev,
         search: draftFilters.search,
@@ -32,14 +41,27 @@ export default function ProductsPage() {
 
     return () => clearTimeout(timer);
   }, [draftFilters.search]);
-  const { data, isPending, error } = useMarketplaceProducts(filters);
+
+  const { data, isPending, error, isFetching } = useMarketplaceProducts(
+    filters,
+    page,
+  );
   const { data: categories = [], isPending: categoriesLoading } =
     useCategories();
 
   if (!data && (isPending || categoriesLoading)) {
     return (
-      <main className="flex min-h-screen items-center justify-center">
-        <h1 className="text-3xl">Loading products...</h1>
+      <main className="flex min-h-screen items-center justify-center bg-[#8eb673]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative h-16 w-16">
+            <div className="absolute inset-0 rounded-full border-4 border-green-200"></div>
+            <div className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-[#346739] border-r-[#346739]"></div>
+          </div>
+
+          <p className="text-lg font-semibold tracking-wide text-[#144a19]">
+            Loading products...
+          </p>
+        </div>
       </main>
     );
   }
@@ -57,7 +79,7 @@ export default function ProductsPage() {
   return (
     <main className="min-h-screen text-gray-800 bg-[#F7FAF5] p-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-10 overflow-hidden rounded-3xl bg-gradient-to-r from-[#346739] to-[#4f9657] p-8 text-white shadow-2xl">
+        <div className="mb-10 overflow-hidden rounded-3xl bg-linear-to-r from-[#346739] to-[#4f9657] p-8 text-white shadow-2xl">
           <div className="grid gap-8 lg:grid-cols-2">
             <div>
               <span className="rounded-full bg-white/20 px-4 py-2 text-sm font-semibold">
@@ -75,12 +97,16 @@ export default function ProductsPage() {
 
               <div className="mt-8 flex flex-wrap gap-4">
                 <button
-                  onClick={() =>
-                    setDraftFilters((prev) => ({
-                      ...prev,
+                  onClick={() => {
+                    const newFilters = {
+                      ...draftFilters,
                       farmingMethod: "organic",
-                    }))
-                  }
+                    };
+
+                    setDraftFilters(newFilters);
+                    setPage(1);
+                    setFilters(newFilters);
+                  }}
                   className="rounded-2xl bg-white px-6 py-3 font-semibold text-[#346739] transition hover:scale-105"
                 >
                   🌿 Organic
@@ -102,7 +128,9 @@ export default function ProductsPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="rounded-3xl bg-white/10 p-6 backdrop-blur">
-                <h3 className="text-4xl font-bold">{products.length}+</h3>
+                <h3 className="text-4xl font-bold">
+                  {data?.totalProducts ?? 0}+
+                </h3>
 
                 <p className="mt-2 text-green-100">Products</p>
               </div>
@@ -301,7 +329,10 @@ export default function ProductsPage() {
                   </select>
 
                   <button
-                    onClick={() => setFilters(draftFilters)}
+                    onClick={() => {
+                      setPage(1);
+                      setFilters(draftFilters);
+                    }}
                     className="filter-apply-btn"
                   >
                     Apply
@@ -310,6 +341,7 @@ export default function ProductsPage() {
                   <button
                     onClick={() => {
                       setDraftFilters(initialFilters);
+                      setPage(1);
                       setFilters(initialFilters);
                     }}
                     className="filter-clear-btn"
@@ -339,11 +371,51 @@ export default function ProductsPage() {
             </p>
           </div>
         ) : (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+
+            {data?.totalPages > 1 && (
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-2">
+                <button
+                  disabled={page === 1 || isFetching}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="rounded-xl border px-4 py-2 transition disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Previous
+                </button>
+
+                {Array.from({ length: data.totalPages }, (_, index) => {
+                  const pageNumber = index + 1;
+
+                  return (
+                    <button
+                      key={pageNumber}
+                      onClick={() => setPage(pageNumber)}
+                      className={`h-10 w-10 rounded-xl transition ${
+                        data?.currentPage === pageNumber
+                          ? "bg-[#346739] text-white"
+                          : "border bg-white hover:bg-green-50"
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  );
+                })}
+
+                <button
+                  disabled={page === data.totalPages || isFetching}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="rounded-xl border px-4 py-2 transition disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </main>
