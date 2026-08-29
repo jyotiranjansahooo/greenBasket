@@ -18,6 +18,10 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const { data: cart, isPending } = useCart();
 
+  // =====================================================
+  // Delivery Address
+  // =====================================================
+
   const [deliveryAddress, setDeliveryAddress] = useState({
     houseNumber: "",
     street: "",
@@ -45,56 +49,46 @@ export default function CheckoutPage() {
   // =====================================================
 
   useEffect(() => {
-    if (!user?.address) return;
+    if (!user?.address) {
+      return;
+    }
 
-    setDeliveryAddress({
-      houseNumber: user.address.houseNumber || "",
-      street:
-        user.address.street ||
-        user.address.area ||
-        "",
-      landmark: user.address.landmark || "",
-      city: user.address.city || "",
-      state: user.address.state || "",
-      pincode: user.address.pincode || "",
-    });
+    // If user.address is already an object
+    if (
+      typeof user.address === "object" &&
+      !Array.isArray(user.address)
+    ) {
+      setDeliveryAddress({
+        houseNumber: user.address.houseNumber || "",
+        street:
+          user.address.street ||
+          user.address.area ||
+          "",
+        landmark: user.address.landmark || "",
+        city: user.address.city || "",
+        state: user.address.state || "",
+        pincode: user.address.pincode || "",
+      });
+    }
   }, [user]);
 
   // =====================================================
-  // Price calculation
+  // Price Calculation
   // =====================================================
 
-  const subtotal = items.reduce(
-    (total, item) => {
-      const price = Number(item?.product?.price || 0);
-      const quantity = Number(item?.quantity || 0);
+  const subtotal = items.reduce((total, item) => {
+    const price = Number(item?.product?.price || 0);
+    const quantity = Number(item?.quantity || 0);
 
-      return total + price * quantity;
-    },
-    0,
-  );
+    return total + price * quantity;
+  }, 0);
 
   const deliveryFee = 50;
 
   const total = subtotal + deliveryFee;
 
   // =====================================================
-  // Convert address object to backend-compatible string
-  // =====================================================
-
-  const formatDeliveryAddress = () => {
-    return [
-      `House / Flat No: ${deliveryAddress.houseNumber.trim()}`,
-      `Street / Area: ${deliveryAddress.street.trim()}`,
-      `Landmark: ${deliveryAddress.landmark.trim()}`,
-      `City: ${deliveryAddress.city.trim()}`,
-      `State: ${deliveryAddress.state.trim()}`,
-      `Pincode: ${deliveryAddress.pincode.trim()}`,
-    ].join(", ");
-  };
-
-  // =====================================================
-  // Load Razorpay safely
+  // Load Razorpay
   // =====================================================
 
   const loadRazorpay = () => {
@@ -103,47 +97,60 @@ export default function CheckoutPage() {
         reject(
           new Error("Browser environment not available."),
         );
+
         return;
       }
 
+      // Already loaded
       if (window.Razorpay) {
         resolve(true);
         return;
       }
 
+      const razorpayUrl =
+        "https://checkout.razorpay.com/v1/checkout.js";
+
+      // Check if script already exists
       const existingScript = document.querySelector(
-        'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+        `script[src="${razorpayUrl}"]`,
       );
 
       if (existingScript) {
-        existingScript.addEventListener("load", () => {
-          if (window.Razorpay) {
-            resolve(true);
-          } else {
+        existingScript.addEventListener(
+          "load",
+          () => {
+            if (window.Razorpay) {
+              resolve(true);
+            } else {
+              reject(
+                new Error(
+                  "Razorpay SDK failed to initialize.",
+                ),
+              );
+            }
+          },
+          { once: true },
+        );
+
+        existingScript.addEventListener(
+          "error",
+          () => {
             reject(
               new Error(
-                "Razorpay SDK failed to initialize.",
+                "Failed to load Razorpay SDK.",
               ),
             );
-          }
-        });
-
-        existingScript.addEventListener("error", () => {
-          reject(
-            new Error(
-              "Failed to load Razorpay SDK.",
-            ),
-          );
-        });
+          },
+          { once: true },
+        );
 
         return;
       }
 
+      // Create Razorpay script
       const script = document.createElement("script");
 
-      script.src =
-        "https://checkout.razorpay.com/v1/checkout.js";
-
+      script.src = razorpayUrl;
       script.async = true;
 
       script.onload = () => {
@@ -171,7 +178,7 @@ export default function CheckoutPage() {
   };
 
   // =====================================================
-  // Order mutation
+  // Order Mutation
   // =====================================================
 
   const orderMutation = useMutation({
@@ -181,9 +188,7 @@ export default function CheckoutPage() {
       setIsSubmitting(false);
       setIsProcessingPayment(false);
 
-      toast.success(
-        "Order placed successfully!",
-      );
+      toast.success("Order placed successfully!");
 
       queryClient.invalidateQueries({
         queryKey: ["cart"],
@@ -201,10 +206,7 @@ export default function CheckoutPage() {
     },
 
     onError: (error) => {
-      console.error(
-        "ORDER ERROR:",
-        error,
-      );
+      console.error("ORDER ERROR:", error);
 
       setIsSubmitting(false);
       setIsProcessingPayment(false);
@@ -218,13 +220,10 @@ export default function CheckoutPage() {
   });
 
   // =====================================================
-  // Address change
+  // Address Change
   // =====================================================
 
-  const handleAddressChange = (
-    field,
-    value,
-  ) => {
+  const handleAddressChange = (field, value) => {
     setDeliveryAddress((previous) => ({
       ...previous,
       [field]: value,
@@ -232,7 +231,7 @@ export default function CheckoutPage() {
   };
 
   // =====================================================
-  // Address validation
+  // Address Validation
   // =====================================================
 
   const validateAddress = () => {
@@ -265,13 +264,10 @@ export default function CheckoutPage() {
 
     for (const field of requiredFields) {
       const value =
-        deliveryAddress[field.key]?.trim();
+        deliveryAddress[field.key]?.trim() || "";
 
       if (!value) {
-        toast.error(
-          `${field.label} is required.`,
-        );
-
+        toast.error(`${field.label} is required.`);
         return false;
       }
     }
@@ -292,14 +288,15 @@ export default function CheckoutPage() {
   };
 
   // =====================================================
-  // Place order
+  // Place Order
   // =====================================================
 
   const handlePlaceOrder = async () => {
-    // Prevent duplicate clicks
+    // Prevent duplicate submissions
     if (
       isSubmitting ||
-      orderMutation.isPending
+      orderMutation.isPending ||
+      isProcessingPayment
     ) {
       return;
     }
@@ -315,25 +312,49 @@ export default function CheckoutPage() {
       return;
     }
 
-    // Start loading
     setIsSubmitting(true);
 
-    // Backend currently expects deliveryAddress as String
-    const formattedAddress =
-      formatDeliveryAddress();
+    // ===================================================
+    // IMPORTANT:
+    // Backend expects deliveryAddress as an OBJECT.
+    // Do NOT convert it to a string.
+    // ===================================================
 
     const orderData = {
       products: items.map((item) => ({
         product: item.product._id,
-        quantity: item.quantity,
+        quantity: Number(item.quantity),
       })),
 
-      deliveryAddress: formattedAddress,
+      deliveryAddress: {
+        houseNumber:
+          deliveryAddress.houseNumber.trim(),
+
+        street:
+          deliveryAddress.street.trim(),
+
+        landmark:
+          deliveryAddress.landmark.trim(),
+
+        city:
+          deliveryAddress.city.trim(),
+
+        state:
+          deliveryAddress.state.trim(),
+
+        pincode:
+          deliveryAddress.pincode.trim(),
+      },
 
       deliverySlot,
 
       paymentMethod,
     };
+
+    console.log(
+      "ORDER DATA:",
+      orderData,
+    );
 
     // ===================================================
     // ONLINE PAYMENT
@@ -343,7 +364,10 @@ export default function CheckoutPage() {
       try {
         setIsProcessingPayment(true);
 
-        // Check Razorpay public key
+        // ------------------------------------------------
+        // Razorpay public key
+        // ------------------------------------------------
+
         const razorpayKey =
           process.env.NEXT_PUBLIC_RAZORPAY_KEY;
 
@@ -353,10 +377,16 @@ export default function CheckoutPage() {
           );
         }
 
+        // ------------------------------------------------
         // Load Razorpay SDK
+        // ------------------------------------------------
+
         await loadRazorpay();
 
-        // Create Razorpay order on backend
+        // ------------------------------------------------
+        // Create Razorpay order
+        // ------------------------------------------------
+
         const payment =
           await createPaymentOrder(total);
 
@@ -372,7 +402,10 @@ export default function CheckoutPage() {
           );
         }
 
-        // Razorpay configuration
+        // ------------------------------------------------
+        // Razorpay options
+        // ------------------------------------------------
+
         const options = {
           key: razorpayKey,
 
@@ -398,6 +431,10 @@ export default function CheckoutPage() {
             color: "#346739",
           },
 
+          // ------------------------------------------------
+          // Payment successful
+          // ------------------------------------------------
+
           handler: function (response) {
             console.log(
               "Razorpay payment successful:",
@@ -406,11 +443,13 @@ export default function CheckoutPage() {
 
             setIsProcessingPayment(false);
 
-            // Create order after successful payment
-            orderMutation.mutate(
-              orderData,
-            );
+            // Create database order
+            orderMutation.mutate(orderData);
           },
+
+          // ------------------------------------------------
+          // Payment window closed
+          // ------------------------------------------------
 
           modal: {
             ondismiss: function () {
@@ -428,8 +467,16 @@ export default function CheckoutPage() {
           },
         };
 
+        // ------------------------------------------------
+        // Create Razorpay instance
+        // ------------------------------------------------
+
         const razorpay =
           new window.Razorpay(options);
+
+        // ------------------------------------------------
+        // Payment failed
+        // ------------------------------------------------
 
         razorpay.on(
           "payment.failed",
@@ -448,6 +495,10 @@ export default function CheckoutPage() {
             );
           },
         );
+
+        // ------------------------------------------------
+        // Open Razorpay
+        // ------------------------------------------------
 
         razorpay.open();
 
@@ -479,7 +530,7 @@ export default function CheckoutPage() {
   };
 
   // =====================================================
-  // Loading state
+  // Loading State
   // =====================================================
 
   if (isPending) {
@@ -501,7 +552,7 @@ export default function CheckoutPage() {
   }
 
   // =====================================================
-  // Empty cart
+  // Empty Cart
   // =====================================================
 
   if (items.length === 0) {
@@ -531,9 +582,7 @@ export default function CheckoutPage() {
 
           <button
             type="button"
-            onClick={() =>
-              router.push("/products")
-            }
+            onClick={() => router.push("/products")}
             className="mt-6 rounded-2xl bg-[#346739] px-6 py-3 font-semibold text-white transition hover:bg-[#2c5c30] active:scale-95"
           >
             Browse Products
@@ -550,7 +599,6 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-[#F7FAF5] px-4 py-6 text-gray-700 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
       <div className="mx-auto max-w-6xl">
-
         {/* Header */}
 
         <div className="mb-7 sm:mb-8">
@@ -584,13 +632,11 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
-
           {/* =================================================
               LEFT SIDE
           ================================================= */}
 
           <div className="space-y-6 lg:col-span-2 lg:space-y-8">
-
             {/* =================================================
                 DELIVERY ADDRESS
             ================================================= */}
@@ -628,7 +674,6 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
-
                 {/* House Number */}
 
                 <div>
@@ -645,9 +690,7 @@ export default function CheckoutPage() {
                   <input
                     id="houseNumber"
                     type="text"
-                    value={
-                      deliveryAddress.houseNumber
-                    }
+                    value={deliveryAddress.houseNumber}
                     onChange={(e) =>
                       handleAddressChange(
                         "houseNumber",
@@ -655,11 +698,12 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="e.g. 24/A"
+                    autoComplete="address-line1"
                     className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
                   />
                 </div>
 
-                {/* Street / Area */}
+                {/* Street */}
 
                 <div>
                   <label
@@ -675,9 +719,7 @@ export default function CheckoutPage() {
                   <input
                     id="street"
                     type="text"
-                    value={
-                      deliveryAddress.street
-                    }
+                    value={deliveryAddress.street}
                     onChange={(e) =>
                       handleAddressChange(
                         "street",
@@ -685,6 +727,7 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="e.g. Main Road, Unit-3"
+                    autoComplete="street-address"
                     className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
                   />
                 </div>
@@ -705,9 +748,7 @@ export default function CheckoutPage() {
                   <input
                     id="landmark"
                     type="text"
-                    value={
-                      deliveryAddress.landmark
-                    }
+                    value={deliveryAddress.landmark}
                     onChange={(e) =>
                       handleAddressChange(
                         "landmark",
@@ -743,6 +784,7 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="e.g. Bhubaneswar"
+                    autoComplete="address-level2"
                     className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
                   />
                 </div>
@@ -771,6 +813,7 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="e.g. Odisha"
+                    autoComplete="address-level1"
                     className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
                   />
                 </div>
@@ -793,9 +836,7 @@ export default function CheckoutPage() {
                     type="text"
                     inputMode="numeric"
                     maxLength={6}
-                    value={
-                      deliveryAddress.pincode
-                    }
+                    value={deliveryAddress.pincode}
                     onChange={(e) =>
                       handleAddressChange(
                         "pincode",
@@ -806,6 +847,7 @@ export default function CheckoutPage() {
                       )
                     }
                     placeholder="e.g. 751001"
+                    autoComplete="postal-code"
                     className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
                   />
                 </div>
@@ -827,15 +869,12 @@ export default function CheckoutPage() {
                     strokeWidth="1.8"
                   >
                     <path d="M3 7h11v10H3z" />
-
                     <path d="M14 10h4l3 3v4h-7z" />
-
                     <circle
                       cx="7"
                       cy="19"
                       r="1.5"
                     />
-
                     <circle
                       cx="18"
                       cy="19"
@@ -852,11 +891,10 @@ export default function CheckoutPage() {
               <select
                 value={deliverySlot}
                 onChange={(e) =>
-                  setDeliverySlot(
-                    e.target.value,
-                  )
+                  setDeliverySlot(e.target.value)
                 }
-                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
+                disabled={isSubmitting}
+                className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 disabled:cursor-not-allowed disabled:bg-gray-50 sm:text-base"
               >
                 <option>
                   Morning (8AM - 12PM)
@@ -906,7 +944,6 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-
                 {/* COD */}
 
                 <button
@@ -993,7 +1030,6 @@ export default function CheckoutPage() {
           ================================================= */}
 
           <aside className="h-fit rounded-3xl bg-white p-5 shadow-lg sm:p-6 lg:sticky lg:top-6">
-
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 text-[#346739]">
                 <svg
@@ -1004,7 +1040,6 @@ export default function CheckoutPage() {
                   strokeWidth="1.8"
                 >
                   <path d="M6 8h12l1 12H5L6 8Z" />
-
                   <path d="M9 8a3 3 0 0 1 6 0" />
                 </svg>
               </div>
@@ -1076,7 +1111,8 @@ export default function CheckoutPage() {
               onClick={handlePlaceOrder}
               disabled={
                 isSubmitting ||
-                orderMutation.isPending
+                orderMutation.isPending ||
+                isProcessingPayment
               }
               className="group relative mt-7 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#346739] py-4 text-base font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#2c5c30] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
             >
@@ -1094,8 +1130,7 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   <span>
-                    {paymentMethod ===
-                    "ONLINE"
+                    {paymentMethod === "ONLINE"
                       ? "Pay & Place Order"
                       : "Place Order"}
                   </span>
@@ -1108,7 +1143,6 @@ export default function CheckoutPage() {
                     strokeWidth="2"
                   >
                     <path d="M5 12h14" />
-
                     <path d="m13 6 6 6-6 6" />
                   </svg>
                 </>
