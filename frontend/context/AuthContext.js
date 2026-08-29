@@ -16,112 +16,142 @@ import {
   googleLogin,
 } from "@/services/authService";
 
-import FullScreenLoader from "@/app/components/common/FullScreenLoader";
-
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(true);
 
-  const checkUser = useCallback(
-    async () => {
-      try {
-        const data =
-          await getCurrentUser();
+  // =====================================================
+  // Check current authenticated user
+  // =====================================================
 
-        setUser(data.user);
+  const checkUser = useCallback(async () => {
+    try {
+      const data = await getCurrentUser();
 
-        return data.user;
-      } catch (error) {
-        if (
-          error.response?.status !==
-          401
-        ) {
-          console.error(error);
-        }
+      const currentUser = data?.user || null;
 
-        setUser(null);
+      setUser(currentUser);
 
-        return null;
-      } finally {
-        setLoading(false);
+      return currentUser;
+    } catch (error) {
+      // 401 simply means the visitor is not logged in.
+      // Don't log it as an application error.
+
+      if (error.response?.status !== 401) {
+        console.error(
+          "AUTH CHECK ERROR:",
+          error,
+        );
       }
-    },
-    []
-  );
+
+      setUser(null);
+
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // =====================================================
+  // Initial authentication check
+  // =====================================================
 
   useEffect(() => {
-    async function init() {
-      await checkUser();
-    }
+    let mounted = true;
+
+    const init = async () => {
+      try {
+        const data = await getCurrentUser();
+
+        if (!mounted) return;
+
+        setUser(data?.user || null);
+      } catch (error) {
+        if (
+          mounted &&
+          error.response?.status !== 401
+        ) {
+          console.error(
+            "AUTH INITIALIZATION ERROR:",
+            error,
+          );
+        }
+
+        if (mounted) {
+          setUser(null);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
 
     init();
-  }, [checkUser]);
 
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // =====================================================
   // Login
+  // =====================================================
+
   const loginUser = async (
     email,
-    password
+    password,
   ) => {
     await login(email, password);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 500)
-    );
-
-    const loggedInUser =
-      await checkUser();
-
-    return loggedInUser;
+    // No artificial 500ms delay.
+    return await checkUser();
   };
 
+  // =====================================================
   // Google Login
+  // =====================================================
+
   const googleLoginUser = async (
-    credential
+    credential,
   ) => {
-    await googleLogin(
-      credential
-    );
+    await googleLogin(credential);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 500)
-    );
-
-    const loggedInUser =
-      await checkUser();
-
-    return loggedInUser;
+    // No artificial 500ms delay.
+    return await checkUser();
   };
 
+  // =====================================================
   // Register
+  // =====================================================
+
   const registerUser = async (
-    formData
+    formData,
   ) => {
     await register(formData);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 500)
-    );
-
-    const newUser =
-      await checkUser();
-
-    return newUser;
+    // No artificial 500ms delay.
+    return await checkUser();
   };
 
+  // =====================================================
   // Logout
-  const logoutUser = async () => {
-    await logout();
+  // =====================================================
 
-    setUser(null);
+  const logoutUser = async () => {
+    try {
+      await logout();
+    } finally {
+      setUser(null);
+    }
   };
 
-  if (loading) {
-    return <FullScreenLoader />;
-  }
+  // =====================================================
+  // Context
+  // =====================================================
 
   return (
     <AuthContext.Provider
@@ -140,6 +170,18 @@ export function AuthProvider({ children }) {
   );
 }
 
+// =======================================================
+// useAuth hook
+// =======================================================
+
 export function useAuth() {
-  return useContext(AuthContext);
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuth must be used inside AuthProvider",
+    );
+  }
+
+  return context;
 }
