@@ -7,26 +7,38 @@ import gsap from "gsap";
 export default function FadeUp({
   children,
   delay = 0,
-  duration = 1,
+  duration = 0.8,
 }) {
   const elementRef = useRef(null);
 
-  useGSAP(() => {
-    gsap.fromTo(
-      elementRef.current,
-      {
-        y: 60,
-        opacity: 0,
-      },
-      {
-        y: 0,
-        opacity: 1,
-        duration,
-        delay,
-        ease: "power3.out",
-      }
-    );
-  });
+  useGSAP(
+    () => {
+      if (!elementRef.current) return;
 
-  return <div ref={elementRef}>{children}</div>;
+      gsap.fromTo(
+        elementRef.current,
+        {
+          y: 40,
+          autoAlpha: 0,
+        },
+        {
+          y: 0,
+          autoAlpha: 1,
+          duration,
+          delay,
+          ease: "power2.out",
+          clearProps: "transform,opacity",
+        },
+      );
+    },
+    {
+      scope: elementRef,
+    },
+  );
+
+  return (
+    <div ref={elementRef}>
+      {children}
+    </div>
+  );
 }
