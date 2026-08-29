@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+
 import { createPaymentOrder } from "@/services/paymentService";
+import { placeOrder } from "@/services/orderService";
 
 import useCart from "@/app/hooks/useCart";
 import { useAuth } from "@/context/AuthContext";
-import { placeOrder } from "@/services/orderService";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -32,6 +33,8 @@ export default function CheckoutPage() {
 
   const [paymentMethod, setPaymentMethod] = useState("COD");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [isProcessingPayment, setIsProcessingPayment] =
     useState(false);
 
@@ -46,7 +49,10 @@ export default function CheckoutPage() {
 
     setDeliveryAddress({
       houseNumber: user.address.houseNumber || "",
-      street: user.address.street || user.address.area || "",
+      street:
+        user.address.street ||
+        user.address.area ||
+        "",
       landmark: user.address.landmark || "",
       city: user.address.city || "",
       state: user.address.state || "",
@@ -59,14 +65,110 @@ export default function CheckoutPage() {
   // =====================================================
 
   const subtotal = items.reduce(
-    (total, item) =>
-      total + item.product.price * item.quantity,
+    (total, item) => {
+      const price = Number(item?.product?.price || 0);
+      const quantity = Number(item?.quantity || 0);
+
+      return total + price * quantity;
+    },
     0,
   );
 
   const deliveryFee = 50;
 
   const total = subtotal + deliveryFee;
+
+  // =====================================================
+  // Convert address object to backend-compatible string
+  // =====================================================
+
+  const formatDeliveryAddress = () => {
+    return [
+      `House / Flat No: ${deliveryAddress.houseNumber.trim()}`,
+      `Street / Area: ${deliveryAddress.street.trim()}`,
+      `Landmark: ${deliveryAddress.landmark.trim()}`,
+      `City: ${deliveryAddress.city.trim()}`,
+      `State: ${deliveryAddress.state.trim()}`,
+      `Pincode: ${deliveryAddress.pincode.trim()}`,
+    ].join(", ");
+  };
+
+  // =====================================================
+  // Load Razorpay safely
+  // =====================================================
+
+  const loadRazorpay = () => {
+    return new Promise((resolve, reject) => {
+      if (typeof window === "undefined") {
+        reject(
+          new Error("Browser environment not available."),
+        );
+        return;
+      }
+
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
+
+      const existingScript = document.querySelector(
+        'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
+      );
+
+      if (existingScript) {
+        existingScript.addEventListener("load", () => {
+          if (window.Razorpay) {
+            resolve(true);
+          } else {
+            reject(
+              new Error(
+                "Razorpay SDK failed to initialize.",
+              ),
+            );
+          }
+        });
+
+        existingScript.addEventListener("error", () => {
+          reject(
+            new Error(
+              "Failed to load Razorpay SDK.",
+            ),
+          );
+        });
+
+        return;
+      }
+
+      const script = document.createElement("script");
+
+      script.src =
+        "https://checkout.razorpay.com/v1/checkout.js";
+
+      script.async = true;
+
+      script.onload = () => {
+        if (window.Razorpay) {
+          resolve(true);
+        } else {
+          reject(
+            new Error(
+              "Razorpay SDK failed to initialize.",
+            ),
+          );
+        }
+      };
+
+      script.onerror = () => {
+        reject(
+          new Error(
+            "Failed to load Razorpay SDK.",
+          ),
+        );
+      };
+
+      document.body.appendChild(script);
+    });
+  };
 
   // =====================================================
   // Order mutation
@@ -76,7 +178,12 @@ export default function CheckoutPage() {
     mutationFn: placeOrder,
 
     onSuccess: () => {
-      toast.success("Order placed successfully!");
+      setIsSubmitting(false);
+      setIsProcessingPayment(false);
+
+      toast.success(
+        "Order placed successfully!",
+      );
 
       queryClient.invalidateQueries({
         queryKey: ["cart"],
@@ -86,22 +193,27 @@ export default function CheckoutPage() {
         queryKey: ["orders"],
       });
 
-      router.push(
-        paymentMethod === "ONLINE"
-          ? "/payment/success"
-          : "/orders",
-      );
+      if (paymentMethod === "ONLINE") {
+        router.push("/payment/success");
+      } else {
+        router.push("/orders");
+      }
     },
 
     onError: (error) => {
-      console.error("ORDER ERROR:", error);
-
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to place order.",
+      console.error(
+        "ORDER ERROR:",
+        error,
       );
 
+      setIsSubmitting(false);
       setIsProcessingPayment(false);
+
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to place order.",
+      );
     },
   });
 
@@ -109,7 +221,10 @@ export default function CheckoutPage() {
   // Address change
   // =====================================================
 
-  const handleAddressChange = (field, value) => {
+  const handleAddressChange = (
+    field,
+    value,
+  ) => {
     setDeliveryAddress((previous) => ({
       ...previous,
       [field]: value,
@@ -149,14 +264,27 @@ export default function CheckoutPage() {
     ];
 
     for (const field of requiredFields) {
-      if (!deliveryAddress[field.key].trim()) {
-        toast.error(`${field.label} is required.`);
+      const value =
+        deliveryAddress[field.key]?.trim();
+
+      if (!value) {
+        toast.error(
+          `${field.label} is required.`,
+        );
+
         return false;
       }
     }
 
-    if (!/^\d{6}$/.test(deliveryAddress.pincode.trim())) {
-      toast.error("Please enter a valid 6-digit pincode.");
+    if (
+      !/^\d{6}$/.test(
+        deliveryAddress.pincode.trim(),
+      )
+    ) {
+      toast.error(
+        "Please enter a valid 6-digit pincode.",
+      );
+
       return false;
     }
 
@@ -168,21 +296,31 @@ export default function CheckoutPage() {
   // =====================================================
 
   const handlePlaceOrder = async () => {
+    // Prevent duplicate clicks
     if (
-      orderMutation.isPending ||
-      isProcessingPayment
+      isSubmitting ||
+      orderMutation.isPending
     ) {
       return;
     }
 
+    // Validate address
     if (!validateAddress()) {
       return;
     }
 
+    // Validate cart
     if (items.length === 0) {
       toast.error("Your cart is empty.");
       return;
     }
+
+    // Start loading
+    setIsSubmitting(true);
+
+    // Backend currently expects deliveryAddress as String
+    const formattedAddress =
+      formatDeliveryAddress();
 
     const orderData = {
       products: items.map((item) => ({
@@ -190,25 +328,7 @@ export default function CheckoutPage() {
         quantity: item.quantity,
       })),
 
-      deliveryAddress: {
-        houseNumber:
-          deliveryAddress.houseNumber.trim(),
-
-        street:
-          deliveryAddress.street.trim(),
-
-        landmark:
-          deliveryAddress.landmark.trim(),
-
-        city:
-          deliveryAddress.city.trim(),
-
-        state:
-          deliveryAddress.state.trim(),
-
-        pincode:
-          deliveryAddress.pincode.trim(),
-      },
+      deliveryAddress: formattedAddress,
 
       deliverySlot,
 
@@ -216,63 +336,57 @@ export default function CheckoutPage() {
     };
 
     // ===================================================
-    // Online Payment
+    // ONLINE PAYMENT
     // ===================================================
 
     if (paymentMethod === "ONLINE") {
       try {
         setIsProcessingPayment(true);
 
+        // Check Razorpay public key
+        const razorpayKey =
+          process.env.NEXT_PUBLIC_RAZORPAY_KEY;
+
+        if (!razorpayKey) {
+          throw new Error(
+            "Razorpay key is missing. Please check your environment variables.",
+          );
+        }
+
+        // Load Razorpay SDK
+        await loadRazorpay();
+
+        // Create Razorpay order on backend
         const payment =
           await createPaymentOrder(total);
 
         if (!payment?.order?.id) {
           throw new Error(
-            "Invalid payment order response.",
+            "Invalid payment order response from server.",
           );
         }
 
-        if (
-          typeof window === "undefined" ||
-          !window.Razorpay
-        ) {
+        if (!window.Razorpay) {
           throw new Error(
-            "Razorpay SDK is not loaded.",
+            "Razorpay SDK is not available.",
           );
         }
 
+        // Razorpay configuration
         const options = {
-          key:
-            process.env
-              .NEXT_PUBLIC_RAZORPAY_KEY,
+          key: razorpayKey,
 
-          amount:
-            payment.order.amount,
+          amount: payment.order.amount,
 
           currency:
-            payment.order.currency,
+            payment.order.currency || "INR",
 
           name: "Green Basket",
 
           description:
             "Fresh Farm Products",
 
-          order_id:
-            payment.order.id,
-
-          handler: function () {
-            orderMutation.mutate(orderData);
-          },
-
-          modal: {
-            ondismiss: function () {
-              setIsProcessingPayment(false);
-
-              toast.error(
-                "Payment was cancelled.",
-              );
-            },
-          },
+          order_id: payment.order.id,
 
           prefill: {
             name: user?.name || "",
@@ -283,6 +397,35 @@ export default function CheckoutPage() {
           theme: {
             color: "#346739",
           },
+
+          handler: function (response) {
+            console.log(
+              "Razorpay payment successful:",
+              response,
+            );
+
+            setIsProcessingPayment(false);
+
+            // Create order after successful payment
+            orderMutation.mutate(
+              orderData,
+            );
+          },
+
+          modal: {
+            ondismiss: function () {
+              console.log(
+                "Razorpay checkout closed.",
+              );
+
+              setIsSubmitting(false);
+              setIsProcessingPayment(false);
+
+              toast.error(
+                "Payment was cancelled.",
+              );
+            },
+          },
         };
 
         const razorpay =
@@ -290,11 +433,18 @@ export default function CheckoutPage() {
 
         razorpay.on(
           "payment.failed",
-          function () {
+          function (response) {
+            console.error(
+              "RAZORPAY PAYMENT FAILED:",
+              response,
+            );
+
+            setIsSubmitting(false);
             setIsProcessingPayment(false);
 
             toast.error(
-              "Payment failed. Please try again.",
+              response?.error?.description ||
+                "Payment failed. Please try again.",
             );
           },
         );
@@ -308,11 +458,12 @@ export default function CheckoutPage() {
           error,
         );
 
+        setIsSubmitting(false);
         setIsProcessingPayment(false);
 
         toast.error(
-          error.response?.data?.message ||
-            error.message ||
+          error?.response?.data?.message ||
+            error?.message ||
             "Failed to open payment gateway.",
         );
 
@@ -321,7 +472,7 @@ export default function CheckoutPage() {
     }
 
     // ===================================================
-    // Cash On Delivery
+    // CASH ON DELIVERY
     // ===================================================
 
     orderMutation.mutate(orderData);
@@ -377,6 +528,16 @@ export default function CheckoutPage() {
           <p className="mt-4 text-sm text-gray-500 sm:text-base">
             Add some products before checking out.
           </p>
+
+          <button
+            type="button"
+            onClick={() =>
+              router.push("/products")
+            }
+            className="mt-6 rounded-2xl bg-[#346739] px-6 py-3 font-semibold text-white transition hover:bg-[#2c5c30] active:scale-95"
+          >
+            Browse Products
+          </button>
         </div>
       </main>
     );
@@ -389,6 +550,7 @@ export default function CheckoutPage() {
   return (
     <main className="min-h-screen bg-[#F7FAF5] px-4 py-6 text-gray-700 sm:px-6 sm:py-8 lg:px-10 lg:py-10">
       <div className="mx-auto max-w-6xl">
+
         {/* Header */}
 
         <div className="mb-7 sm:mb-8">
@@ -408,7 +570,9 @@ export default function CheckoutPage() {
                   height="14"
                   rx="2"
                 />
+
                 <path d="M3 10h18" />
+
                 <path d="M7 15h4" />
               </svg>
             </div>
@@ -420,11 +584,13 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3 lg:gap-8">
+
           {/* =================================================
               LEFT SIDE
           ================================================= */}
 
           <div className="space-y-6 lg:col-span-2 lg:space-y-8">
+
             {/* =================================================
                 DELIVERY ADDRESS
             ================================================= */}
@@ -440,6 +606,7 @@ export default function CheckoutPage() {
                     strokeWidth="1.8"
                   >
                     <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11Z" />
+
                     <circle
                       cx="12"
                       cy="10"
@@ -461,6 +628,7 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
+
                 {/* House Number */}
 
                 <div>
@@ -659,12 +827,15 @@ export default function CheckoutPage() {
                     strokeWidth="1.8"
                   >
                     <path d="M3 7h11v10H3z" />
+
                     <path d="M14 10h4l3 3v4h-7z" />
+
                     <circle
                       cx="7"
                       cy="19"
                       r="1.5"
                     />
+
                     <circle
                       cx="18"
                       cy="19"
@@ -681,7 +852,9 @@ export default function CheckoutPage() {
               <select
                 value={deliverySlot}
                 onChange={(e) =>
-                  setDeliverySlot(e.target.value)
+                  setDeliverySlot(
+                    e.target.value,
+                  )
                 }
                 className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3.5 text-sm outline-none transition focus:border-[#346739] focus:ring-2 focus:ring-green-100 sm:text-base"
               >
@@ -733,14 +906,16 @@ export default function CheckoutPage() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
+
                 {/* COD */}
 
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() =>
                     setPaymentMethod("COD")
                   }
-                  className={`rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.98] ${
+                  className={`rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed ${
                     paymentMethod === "COD"
                       ? "border-[#346739] bg-green-50 shadow-sm"
                       : "border-gray-200 bg-white hover:border-green-300 hover:bg-green-50/40"
@@ -775,10 +950,11 @@ export default function CheckoutPage() {
 
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() =>
                     setPaymentMethod("ONLINE")
                   }
-                  className={`rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.98] ${
+                  className={`rounded-2xl border p-5 text-left transition-all duration-200 active:scale-[0.98] disabled:cursor-not-allowed ${
                     paymentMethod === "ONLINE"
                       ? "border-[#346739] bg-green-50 shadow-sm"
                       : "border-gray-200 bg-white hover:border-green-300 hover:bg-green-50/40"
@@ -817,6 +993,7 @@ export default function CheckoutPage() {
           ================================================= */}
 
           <aside className="h-fit rounded-3xl bg-white p-5 shadow-lg sm:p-6 lg:sticky lg:top-6">
+
             <div className="mb-6 flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-green-50 text-[#346739]">
                 <svg
@@ -827,6 +1004,7 @@ export default function CheckoutPage() {
                   strokeWidth="1.8"
                 >
                   <path d="M6 8h12l1 12H5L6 8Z" />
+
                   <path d="M9 8a3 3 0 0 1 6 0" />
                 </svg>
               </div>
@@ -856,8 +1034,12 @@ export default function CheckoutPage() {
 
                   <span className="shrink-0 font-semibold text-gray-800">
                     ₹
-                    {item.product.price *
-                      item.quantity}
+                    {Number(
+                      item.product.price || 0,
+                    ) *
+                      Number(
+                        item.quantity || 0,
+                      )}
                   </span>
                 </div>
               ))}
@@ -892,10 +1074,14 @@ export default function CheckoutPage() {
             <button
               type="button"
               onClick={handlePlaceOrder}
-              disabled={isSubmitting}
+              disabled={
+                isSubmitting ||
+                orderMutation.isPending
+              }
               className="group relative mt-7 flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-[#346739] py-4 text-base font-semibold text-white shadow-md transition-all duration-200 hover:bg-[#2c5c30] hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 sm:text-lg"
             >
-              {isSubmitting ? (
+              {isSubmitting ||
+              orderMutation.isPending ? (
                 <>
                   <span className="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
 
@@ -908,7 +1094,8 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   <span>
-                    {paymentMethod === "ONLINE"
+                    {paymentMethod ===
+                    "ONLINE"
                       ? "Pay & Place Order"
                       : "Place Order"}
                   </span>
