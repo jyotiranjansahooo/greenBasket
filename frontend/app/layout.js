@@ -1,16 +1,32 @@
 import "./globals.css";
-import NaNvbar from "./components/layout/Navbar";
+
+import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import { Fredoka, Poppins, DynaPuff } from "next/font/google";
+
+import {
+  Fredoka,
+  Poppins,
+  DynaPuff,
+} from "next/font/google";
+
 import { Toaster } from "react-hot-toast";
+
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "@/providers/QueryProvider";
+
 import OfflineHandler from "./components/common/OfflineHandler";
+
 import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import Script from "next/script";
 
 import { siteMetadata } from "./metadata";
+
 export const metadata = siteMetadata;
+
+// ======================================================
+// Fonts
+// ======================================================
 
 const fredoka = Fredoka({
   subsets: ["latin"],
@@ -30,26 +46,49 @@ const dynaPuff = DynaPuff({
   variable: "--font-dynapuff",
 });
 
-export default function RootLayout({ children }) {
+// ======================================================
+// Root Layout
+// ======================================================
+
+export default function RootLayout({
+  children,
+}) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+    >
       <body
         className={`${fredoka.variable} ${poppins.variable} ${dynaPuff.variable}`}
       >
         <QueryProvider>
           <GoogleOAuthProvider
-            clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
+            clientId={
+              process.env
+                .NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            }
           >
             <AuthProvider>
               <OfflineHandler />
-              <NaNvbar />
-              <Toaster position="top-right" />
+
+              <Navbar />
+
+              <Toaster
+                position="top-right"
+              />
+
               {children}
+
               <Footer />
             </AuthProvider>
           </GoogleOAuthProvider>
         </QueryProvider>
-        <Script src="https://checkout.razorpay.com/v1/checkout.js" />c
+
+        {/* Razorpay loads after the page becomes interactive */}
+        <Script
+          src="https://checkout.razorpay.com/v1/checkout.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
