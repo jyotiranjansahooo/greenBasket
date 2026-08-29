@@ -47,11 +47,44 @@ const orderSchema = new mongoose.Schema(
       min: 0,
     },
 
-    deliveryAddress: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+deliveryAddress: {
+  houseNumber: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  street: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  landmark: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  city: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  state: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
+  pincode: {
+    type: String,
+    required: true,
+    trim: true,
+    match: [/^\d{6}$/, "Please enter a valid 6-digit pincode."],
+  },
+},
 
     deliverySlot: {
       type: String,
