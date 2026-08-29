@@ -114,9 +114,7 @@ export const verifyCode = async (req, res) => {
   try {
     const { email, code } = req.body;
 
-    const user = await User.findOne({
-      email,
-    });
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -125,50 +123,28 @@ export const verifyCode = async (req, res) => {
       });
     }
 
-   if (user.resetPasswordCode !== code) {
-  const currentAttempts =
-    resetOtpAttempts.get(email) || {
-      count: 0,
-    };
-
-  currentAttempts.count += 1;
-
-  if (
-    currentAttempts.count >= MAX_RESET_ATTEMPTS
-  ) {
-    currentAttempts.blockedUntil =
-      Date.now() + RESET_BLOCK_TIME;
-  }
-
-  resetOtpAttempts.set(
-    email,
-    currentAttempts
-  );
-
-  return res.status(400).json({
-    success: false,
-    message:
-      currentAttempts.count >=
-      MAX_RESET_ATTEMPTS
-        ? "Too many incorrect OTP attempts. Please try again later."
-        : `Invalid OTP. ${
-            MAX_RESET_ATTEMPTS -
-            currentAttempts.count
-          } attempts remaining.`,
-  });
-}
-
-    if (user.verificationCodeExpires < Date.now()) {
+    // Check if OTP has expired
+    if (
+      !user.verificationCodeExpires ||
+      user.verificationCodeExpires < Date.now()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Verification code expired.",
+        message: "Verification code expired. Please request a new OTP.",
       });
     }
 
+    // Check registration verification OTP
+    if (user.verificationCode !== code) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid verification code.",
+      });
+    }
+
+    // OTP is correct
     user.isVerified = true;
-
     user.verificationCode = undefined;
-
     user.verificationCodeExpires = undefined;
 
     await user.save();
@@ -186,10 +162,6 @@ export const verifyCode = async (req, res) => {
     });
   }
 };
-
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -312,13 +284,13 @@ export const loginUser = async (req, res) => {
 // @access  Private
 export const logoutUser = (req, res) => {
   res.cookie("token", "", {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-  partitioned: true,
-  path: "/",
-  expires: new Date(0),
-});
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    partitioned: true,
+    path: "/",
+    expires: new Date(0),
+  });
 
   res.status(200).json({
     success: true,
@@ -552,75 +524,62 @@ export const verifyResetCode = async (req, res) => {
     const { email, code } = req.body;
     const attempts = resetOtpAttempts.get(email);
 
-if (
-  attempts &&
-  attempts.count >= MAX_RESET_ATTEMPTS &&
-  attempts.blockedUntil > Date.now()
-) {
-  const remainingSeconds = Math.ceil(
-    (attempts.blockedUntil - Date.now()) / 1000
-  );
+    if (
+      attempts &&
+      attempts.count >= MAX_RESET_ATTEMPTS &&
+      attempts.blockedUntil > Date.now()
+    ) {
+      const remainingSeconds = Math.ceil(
+        (attempts.blockedUntil - Date.now()) / 1000,
+      );
 
-  return res.status(429).json({
-    success: false,
-    message: `Too many incorrect OTP attempts. Please try again in ${remainingSeconds} seconds.`,
-  });
-}
+      return res.status(429).json({
+        success: false,
+        message: `Too many incorrect OTP attempts. Please try again in ${remainingSeconds} seconds.`,
+      });
+    }
     const user = await User.findOne({
       email,
     });
 
-   if (!user) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid OTP.",
-  });
-}
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid OTP.",
+      });
+    }
 
-if (user.resetPasswordCode !== code) {
-  const currentAttempts =
-    resetOtpAttempts.get(email) || {
-      count: 0,
-    };
+    if (user.resetPasswordCode !== code) {
+      const currentAttempts = resetOtpAttempts.get(email) || {
+        count: 0,
+      };
 
-  currentAttempts.count += 1;
+      currentAttempts.count += 1;
 
-  if (
-    currentAttempts.count >=
-    MAX_RESET_ATTEMPTS
-  ) {
-    currentAttempts.blockedUntil =
-      Date.now() + RESET_BLOCK_TIME;
+      if (currentAttempts.count >= MAX_RESET_ATTEMPTS) {
+        currentAttempts.blockedUntil = Date.now() + RESET_BLOCK_TIME;
 
-    user.resetPasswordCode =
-      undefined;
+        user.resetPasswordCode = undefined;
 
-    user.resetPasswordCodeExpires =
-      undefined;
+        user.resetPasswordCodeExpires = undefined;
 
-    user.resetPasswordVerified =
-      false;
+        user.resetPasswordVerified = false;
 
-    await user.save();
-  }
+        await user.save();
+      }
 
-  resetOtpAttempts.set(
-    email,
-    currentAttempts
-  );
+      resetOtpAttempts.set(email, currentAttempts);
 
-  return res.status(400).json({
-    success: false,
-    message:
-      currentAttempts.count >=
-      MAX_RESET_ATTEMPTS
-        ? "Too many incorrect OTP attempts. Your OTP has expired. Please try again in 2 minutes and request a new OTP."
-        : `Invalid OTP. ${
-            MAX_RESET_ATTEMPTS -
-            currentAttempts.count
-          } attempts remaining.`,
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message:
+          currentAttempts.count >= MAX_RESET_ATTEMPTS
+            ? "Too many incorrect OTP attempts. Your OTP has expired. Please try again in 2 minutes and request a new OTP."
+            : `Invalid OTP. ${
+                MAX_RESET_ATTEMPTS - currentAttempts.count
+              } attempts remaining.`,
+      });
+    }
 
     if (user.resetPasswordCodeExpires < Date.now()) {
       return res.status(400).json({
@@ -661,11 +620,11 @@ export const resetPassword = async (req, res) => {
       });
     }
     if (!user.resetPasswordVerified) {
-  return res.status(400).json({
-    success: false,
-    message: "Please verify the OTP first.",
-  });
-}
+      return res.status(400).json({
+        success: false,
+        message: "Please verify the OTP first.",
+      });
+    }
 
     const salt = await bcrypt.genSalt(10);
 
