@@ -7,19 +7,26 @@ import gsap from "gsap";
 export default function Floating({
   children,
   y = 20,
-  duration = 2.5,
+  duration = 3,
 }) {
   const ref = useRef(null);
 
-  useGSAP(() => {
-    gsap.to(ref.current, {
-      y,
-      duration,
-      repeat: -1,
-      yoyo: true,
-      ease: "power1.inOut",
-    });
-  });
+  useGSAP(
+    () => {
+      if (!ref.current) return;
+
+      gsap.to(ref.current, {
+        y,
+        duration,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+    },
+    {
+      scope: ref,
+    },
+  );
 
   return <div ref={ref}>{children}</div>;
 }
