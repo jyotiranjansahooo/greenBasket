@@ -43,7 +43,7 @@ app.use(
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 app.use(express.json());
@@ -62,7 +62,12 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/farmer", farmerRoutes);
 app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/payment", paymentRoutes);
-
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Green Basket backend is running",
+  });
+});
 // Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
